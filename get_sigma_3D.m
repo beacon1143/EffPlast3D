@@ -163,6 +163,9 @@ function [Keff, Geff] = get_sigma_3D(Lx, Ly, Lz, loadValue, loadType, nGrid, nTi
         
         % plasticity
         J2 = sqrt(tauxx .^ 2 + tauyy .^ 2 + tauzz .^ 2 + 2.0 * (tauxyAv .^ 2 + tauxzAv .^ 2 + tauyzAv .^ 2));    % Mises criteria
+        J2xy(:, :, 2:end-1) = sqrt(av4(tauxx(:, :, 2:end-1), 1).^2 + av4(tauyy(:, :, 2:end-1), 1).^2 + av4(tauzz(:, :, 2:end-1), 1).^2 + 2.0 * (tauxy(:, :, 2:end-1).^2 + av4(tauxz, 3).^2 + av4(tauyz, 2).^2));
+        J2xz(:, 2:end-1, :) = sqrt(av4(tauxx(:, 2:end-1, :), 2).^2 + av4(tauyy(:, 2:end-1, :), 2).^2 + av4(tauzz(:, 2:end-1, :), 2).^2 + 2.0 * (tauxz(:, 2:end-1, :).^2 + av4(tauxy, 3).^2 + av4(tauyz, 1).^2));
+        J2yz(2:end-1, :, :) = sqrt(av4(tauxx(2:end-1, :, :), 3).^2 + av4(tauyy(2:end-1, :, :), 3).^2 + av4(tauzz(2:end-1, :, :), 3).^2 + 2.0 * (tauyz(2:end-1, :, :).^2 + av4(tauxy, 2).^2 + av4(tauxz, 1).^2));
         
         % motion equation
         dVxdt = diff(-P(:,2:end-1,2:end-1) + tauxx(:,2:end-1,2:end-1), 1, 1)/dX / rho0 + (diff(tauxy(:,:,2:end-1),1,2)/dY + diff(tauxz(:, 2:end-1, :), 1, 3)/dZ) / rho0;
@@ -210,6 +213,10 @@ function [Keff, Geff] = get_sigma_3D(Lx, Ly, Lz, loadValue, loadType, nGrid, nTi
     
     fil = fopen(strcat('data\J2mXY_', int2str(Nx), '_.dat'), 'wb');
     fwrite(fil, J2(:, :, end/2), 'double');
+    fclose(fil);
+    
+    fil = fopen(strcat('data\J2XYmXY_', int2str(Nx), '_.dat'), 'wb');
+    fwrite(fil, J2xy(:, :, end/2), 'double');
     fclose(fil);
     
     fil = fopen(strcat('data\tauXXm_', int2str(Nx), '_.dat'), 'wb');

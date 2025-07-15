@@ -22,7 +22,7 @@ nIter = 10000;
 eIter = 1.0e-5;
 iDevice = 0;
 
-needCPUcalculation = false;
+needCPUcalculation = true;
 
 Nx  = 8 * nGrid;     % number of space steps
 Ny  = 8 * nGrid;
@@ -59,6 +59,7 @@ else % needCPUcalculation
   PmXZ = read_data_2D('data\PmXZ', Nx, Nx, Ny);
   PmYZ = read_data_2D('data\PmYZ', Nx, Nx, Ny);
   J2mXY = read_data_2D('data\J2mXY', Nx, Nx, Ny);
+  J2XYmXY = read_data_2D('data\J2XYmXY', Nx, Nx - 1, Ny - 1);
   tauXXm = read_data_2D('data\tauXXm', Nx, Nx, Ny);
   tauYYm = read_data_2D('data\tauYYm', Nx, Nx, Ny);
   tauXZmXY = read_data_2D('data\tauXZmXY', Nx, Nx - 1, Ny);
@@ -115,9 +116,9 @@ else % needCPUcalculation
   %axis image
   
   subplot(2, 3, 4)
-  imagesc(J2mXY)
+  imagesc(J2XYmXY)
   colorbar
-  title('J2mXY')
+  title('J2XYmXY')
   axis image
   
   subplot(2, 3, 5)
