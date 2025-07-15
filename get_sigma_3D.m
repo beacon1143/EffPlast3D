@@ -132,34 +132,34 @@ function [Keff, Geff] = get_sigma_3D(Lx, Ly, Lz, loadValue, loadType, nGrid, nTi
         
         % tauIJ for plasticity
         tauxyAv(2:end-1, 2:end-1, :) = av4(tauxy, 1);        
-        tauxyAv(1, 2:end-1, :) = tauxyAv(2, 2:end-1, :);
-        tauxyAv(end, 2:end-1, :) = tauxyAv(end-1, 2:end-1, :);
-        tauxyAv(2:end-1, 1, :) = tauxyAv(2:end-1, 2, :);
-        tauxyAv(2:end-1, end, :) = tauxyAv(2:end-1, end-1, :);
-        tauxyAv(1, 1, :) = 0.5 * (tauxyAv(1, 2, :) + tauxyAv(2, 1, :));
-        tauxyAv(end, 1, :) = 0.5 * (tauxyAv(end, 2, :) + tauxyAv(end-1, 1, :));
-        tauxyAv(1, end, :) = 0.5 * (tauxyAv(2, end, :) + tauxyAv(1, end-1, :));
-        tauxyAv(end, end, :) = 0.5 * (tauxyAv(end, end-1, :) + tauxyAv(end-1, end, :));
+        %tauxyAv(1, 2:end-1, :) = tauxyAv(2, 2:end-1, :);
+        %tauxyAv(end, 2:end-1, :) = tauxyAv(end-1, 2:end-1, :);
+        %tauxyAv(2:end-1, 1, :) = tauxyAv(2:end-1, 2, :);
+        %tauxyAv(2:end-1, end, :) = tauxyAv(2:end-1, end-1, :);
+        %tauxyAv(1, 1, :) = 0.5 * (tauxyAv(1, 2, :) + tauxyAv(2, 1, :));
+        %tauxyAv(end, 1, :) = 0.5 * (tauxyAv(end, 2, :) + tauxyAv(end-1, 1, :));
+        %tauxyAv(1, end, :) = 0.5 * (tauxyAv(2, end, :) + tauxyAv(1, end-1, :));
+        %tauxyAv(end, end, :) = 0.5 * (tauxyAv(end, end-1, :) + tauxyAv(end-1, end, :));
         
         tauxzAv(2:end-1, :, 2:end-1) = av4(tauxz, 2);
-        tauxzAv(1, :, 2:end-1) = tauxzAv(2, :, 2:end-1);
-        tauxzAv(end, :, 2:end-1) = tauxzAv(end-1, :, 2:end-1);
-        tauxzAv(2:end-1, :, 1) = tauxzAv(2:end-1, :, 2);
-        tauxzAv(2:end-1, :, end) = tauxzAv(2:end-1, :, end-1);
-        tauxzAv(1, :, 1) = 0.5 * (tauxzAv(1, :, 2) + tauxzAv(2, :, 1));
-        tauxzAv(end, :, 1) = 0.5 * (tauxzAv(end, :, 2) + tauxzAv(end - 1, :, 1));
-        tauxzAv(1, :, end) = 0.5 * (tauxzAv(2, :, end) + tauxzAv(1, :, end - 1));
-        tauxzAv(end, :, end) = 0.5 * (tauxzAv(end, :, end-1) + tauxzAv(end-1, :, end));
+        %tauxzAv(1, :, 2:end-1) = tauxzAv(2, :, 2:end-1);
+        %tauxzAv(end, :, 2:end-1) = tauxzAv(end-1, :, 2:end-1);
+        %tauxzAv(2:end-1, :, 1) = tauxzAv(2:end-1, :, 2);
+        %tauxzAv(2:end-1, :, end) = tauxzAv(2:end-1, :, end-1);
+        %tauxzAv(1, :, 1) = 0.5 * (tauxzAv(1, :, 2) + tauxzAv(2, :, 1));
+        %tauxzAv(end, :, 1) = 0.5 * (tauxzAv(end, :, 2) + tauxzAv(end - 1, :, 1));
+        %tauxzAv(1, :, end) = 0.5 * (tauxzAv(2, :, end) + tauxzAv(1, :, end - 1));
+        %tauxzAv(end, :, end) = 0.5 * (tauxzAv(end, :, end-1) + tauxzAv(end-1, :, end));
         
         tauyzAv(:, 2:end-1, 2:end-1) = av4(tauyz, 3);
-        tauyzAv(:, 1, 2:end-1) = tauyzAv(:, 2, 2:end-1);
-        tauyzAv(:, end, 2:end-1) = tauyzAv(:, end-1, 2:end-1);
-        tauyzAv(:, 2:end-1, 1) = tauyzAv(:, 2:end-1, 2);
-        tauyzAv(:, 2:end-1, end) = tauyzAv(:, 2:end-1, end-1);
-        tauyzAv(:, 1, 1) = 0.5 * (tauyzAv(:, 1, 2) + tauyzAv(:, 2, 1));
-        tauyzAv(:, end, 1) = 0.5 * (tauyzAv(:, end, 2) + tauyzAv(:, end-1, 1));
-        tauyzAv(:, 1, end) = 0.5 * (tauyzAv(:, 2, end) + tauyzAv(:, 1, end-1));
-        tauyzAv(:, end, end) = 0.5 * (tauyzAv(:, end, end-1) + tauyzAv(:, end-1, end));
+        %tauyzAv(:, 1, 2:end-1) = tauyzAv(:, 2, 2:end-1);
+        %tauyzAv(:, end, 2:end-1) = tauyzAv(:, end-1, 2:end-1);
+        %tauyzAv(:, 2:end-1, 1) = tauyzAv(:, 2:end-1, 2);
+        %tauyzAv(:, 2:end-1, end) = tauyzAv(:, 2:end-1, end-1);
+        %tauyzAv(:, 1, 1) = 0.5 * (tauyzAv(:, 1, 2) + tauyzAv(:, 2, 1));
+        %tauyzAv(:, end, 1) = 0.5 * (tauyzAv(:, end, 2) + tauyzAv(:, end-1, 1));
+        %tauyzAv(:, 1, end) = 0.5 * (tauyzAv(:, 2, end) + tauyzAv(:, 1, end-1));
+        %tauyzAv(:, end, end) = 0.5 * (tauyzAv(:, end, end-1) + tauyzAv(:, end-1, end));
         
         % plasticity
         J2 = sqrt(tauxx .^ 2 + tauyy .^ 2 + tauzz .^ 2 + 2.0 * (tauxyAv .^ 2 + tauxzAv .^ 2 + tauyzAv .^ 2));    % Mises criteria

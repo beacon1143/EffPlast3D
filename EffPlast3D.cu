@@ -67,7 +67,6 @@ __global__ void ComputeStress(const double* const Ux, const double* const Uy, co
   const double* const pa,
   const long int nX, const long int nY, const long int nZ)
 {
-
   int i = blockIdx.x * blockDim.x + threadIdx.x;
   int j = blockIdx.y * blockDim.y + threadIdx.y;
   int k = blockIdx.z * blockDim.z + threadIdx.z;
@@ -188,6 +187,47 @@ __global__ void ComputeStress(const double* const Ux, const double* const Uy, co
   } // for(a)
 }
 
+__global__ void ComputeJ2(double* tauXX, double* tauYY, double* tauZZ,
+  double* tauXY, double* tauXZ, double* tauYZ,
+  double* const tauXYav, double* const tauXZav, double* const tauYZav,
+  double* const J2, /*double* const J2XY, double* const J2XZ, double* const J2YZ,*/
+  const long int nX, const long int nY, const long int nZ)
+{
+  int i = blockIdx.x * blockDim.x + threadIdx.x;
+  int j = blockIdx.y * blockDim.y + threadIdx.y;
+  int k = blockIdx.z * blockDim.z + threadIdx.z;
+
+  // tauIJ for plasticity
+  if (i > 0 && i < nX - 1 && j > 0 && j < nY - 1) {
+    tauXYav[k * nX * nY + j * nX + i] = 0.25 * (
+      tauXY[k * (nX - 1) * (nY - 1) + (j - 1) * (nX - 1) + i - 1] + tauXY[k * (nX - 1) * (nY - 1) + (j - 1) * (nX - 1) + i] + 
+      tauXY[k * (nX - 1) * (nY - 1) + j * (nX - 1) + i - 1] + tauXY[k * (nX - 1) * (nY - 1) + j * (nX - 1) + i]
+    );
+  }
+  if (i > 0 && i < nX - 1 && k > 0 && k < nZ - 1) {
+    tauXZav[k * nX * nY + j * nX + i] = 0.25 * (
+      tauXZ[(k - 1) * (nX - 1) * nY + j * (nX - 1) + i - 1] + tauXZ[(k - 1) * (nX - 1) * nY + j * (nX - 1) + i] +
+      tauXZ[k * (nX - 1) * nY + j * (nX - 1) + i - 1] + tauXZ[k * (nX - 1) * nY + j * (nX - 1) + i]
+    );
+  }
+  if (j > 0 && j < nY - 1 && k > 0 && k < nZ - 1) {
+    tauYZav[k * nX * nY + j * nX + i] = 0.25 * (
+      tauYZ[(k - 1) * nX * (nY - 1) + (j - 1) * nX + i] + tauYZ[(k - 1) * nX * (nY - 1) + j * nX + i] +
+      tauYZ[k * nX * (nY - 1) + (j - 1) * nX + i] + tauYZ[k * nX * (nY - 1) + j * nX + i]
+    );
+  }
+  J2[k * nX * nY + j * nX + i] = sqrt(
+    tauXX[k * nX * nY + j * nX + i] * tauXX[k * nX * nY + j * nX + i] + 
+    tauYY[k * nX * nY + j * nX + i] * tauYY[k * nX * nY + j * nX + i] +
+    tauZZ[k * nX * nY + j * nX + i] * tauZZ[k * nX * nY + j * nX + i] +
+    2.0 * (
+      tauXYav[k * nX * nY + j * nX + i] * tauXYav[k * nX * nY + j * nX + i] +
+      tauXZav[k * nX * nY + j * nX + i] * tauXZav[k * nX * nY + j * nX + i] +
+      tauYZav[k * nX * nY + j * nX + i] * tauYZav[k * nX * nY + j * nX + i]
+    )
+  );
+}
+
 double EffPlast3D::ComputeEffModuli(const double initLoadValue, [[deprecated]] const double loadValue, 
   const unsigned int nTimeSteps, const std::array<double, 6>& loadType)
 {
@@ -222,6 +262,7 @@ double EffPlast3D::ComputeEffModuli(const double initLoadValue, [[deprecated]] c
   SaveSlice(P_cpu, P_cuda, nX, nY, nZ, nZ / 2, "data/PcXY_" + std::to_string(8 * NGRID) + "_.dat");
   SaveSlice(tauXX_cpu, tauXX_cuda, nX, nY, nZ, nZ / 2, "data/tauXXc_" + std::to_string(8 * NGRID) + "_.dat");
   SaveSlice(tauXZ_cpu, tauXZ_cuda, nX - 1, nY, nZ - 1, nZ / 2, "data/tauXZcXY_" + std::to_string(8 * NGRID) + "_.dat");
+  SaveSlice(J2_cpu, J2_cuda, nX, nY, nZ, nZ / 2, "data/J2cXY_" + std::to_string(8 * NGRID) + "_.dat");
   SaveSlice(Ux_cpu, Ux_cuda, nX + 1, nY, nZ, nZ / 2, "data/UxcXY_" + std::to_string(8 * NGRID) + "_.dat");
   SaveSlice(Vx_cpu, Vx_cuda, nX + 1, nY, nZ, nZ / 2, "data/VxcXY_" + std::to_string(8 * NGRID) + "_.dat");
   //SaveMatrix(tauYY_cpu, tauYY_cuda, nX, nY, "data/tauYYc_" + std::to_string(32 * NGRID) + "_.dat");
@@ -347,6 +388,12 @@ void EffPlast3D::ComputeEffParams(const size_t step, const double loadStepValue,
         tauXY_cuda, tauXZ_cuda, tauYZ_cuda,
         /*tauXYav_cuda, J2_cuda, J2XY_cuda,*/ pa_cuda, nX, nY, nZ);
       gpuErrchk(cudaDeviceSynchronize());
+      ComputeJ2<<<grid, block>>>(tauXX_cuda, tauYY_cuda, tauZZ_cuda,
+        tauXY_cuda, tauXZ_cuda, tauYZ_cuda,
+        tauXYav_cuda, tauXZav_cuda, tauYZav_cuda,
+        J2_cuda, /*J2XY_cuda, J2XZ_cuda, J2YZ_cuda,*/
+        nX, nY, nZ);
+      gpuErrchk(cudaDeviceSynchronize());
       /*if (NL > 1) {
         ComputeJ2<<<grid, block>>>(tauXX_cuda, tauYY_cuda, tauXY_cuda, tauXYav_cuda, J2_cuda, J2XY_cuda, nX, nY);
         gpuErrchk(cudaDeviceSynchronize());
@@ -402,8 +449,8 @@ void EffPlast3D::ComputeEffParams(const size_t step, const double loadStepValue,
     gpuErrchk(cudaMemcpy(tauXY_cpu, tauXY_cuda, (nX - 1) * (nY - 1) * nZ * sizeof(double), cudaMemcpyDeviceToHost));
     gpuErrchk(cudaMemcpy(tauXZ_cpu, tauXZ_cuda, (nX - 1) * nY * (nZ - 1) * sizeof(double), cudaMemcpyDeviceToHost));
     gpuErrchk(cudaMemcpy(tauYZ_cpu, tauYZ_cuda, nX * (nY - 1) * (nZ - 1) * sizeof(double), cudaMemcpyDeviceToHost));
-    /*gpuErrchk(cudaMemcpy(tauXYav_cpu, tauXYav_cuda, nX * nY * sizeof(double), cudaMemcpyDeviceToHost));
-    gpuErrchk(cudaMemcpy(J2_cpu, J2_cuda, nX * nY * sizeof(double), cudaMemcpyDeviceToHost));*/
+    /*gpuErrchk(cudaMemcpy(tauXYav_cpu, tauXYav_cuda, nX * nY * sizeof(double), cudaMemcpyDeviceToHost));*/
+    gpuErrchk(cudaMemcpy(J2_cpu, J2_cuda, nX * nY * nZ * sizeof(double), cudaMemcpyDeviceToHost));
     gpuErrchk(cudaMemcpy(Ux_cpu, Ux_cuda, (nX + 1) * nY * nZ * sizeof(double), cudaMemcpyDeviceToHost));
     gpuErrchk(cudaMemcpy(Uy_cpu, Uy_cuda, nX * (nY + 1) * nZ * sizeof(double), cudaMemcpyDeviceToHost));
     gpuErrchk(cudaMemcpy(Uz_cpu, Uz_cuda, nX * nY * (nZ + 1) * sizeof(double), cudaMemcpyDeviceToHost));
@@ -567,7 +614,7 @@ EffPlast3D::EffPlast3D() {
   nu0 = (1.5 * K0 - G0) / (3.0 * K0 + G0);
   //std::cout << "E = " << E0 << ", nu = " << nu0 << "\n";
   rad = pa_cpu[11];
-  Y = pa_cpu[10] / sqrt(2.0);
+  Y = pa_cpu[10] / sqrt(3.0);
   nPores = pa_cpu[12];
 
   /* SPACE ARRAYS */
@@ -590,11 +637,13 @@ EffPlast3D::EffPlast3D() {
   SetTensorZero(&tauXY_cpu, &tauXY_cuda, nX - 1, nY - 1, nZ);
   SetTensorZero(&tauXZ_cpu, &tauXZ_cuda, nX - 1, nY, nZ - 1);
   SetTensorZero(&tauYZ_cpu, &tauYZ_cuda, nX, nY - 1, nZ - 1);
-  //SetMatrixZero(&tauXYav_cpu, &tauXYav_cuda, nX, nY);
+  SetTensorZero(&tauXYav_cpu, &tauXYav_cuda, nX, nY, nZ);
+  SetTensorZero(&tauXZav_cpu, &tauXZav_cuda, nX, nY, nZ);
+  SetTensorZero(&tauYZav_cpu, &tauYZav_cuda, nX, nY, nZ);
 
   // plasticity
-  /*SetMatrixZero(&J2_cpu, &J2_cuda, nX, nY);
-  SetMatrixZero(&J2XY_cpu, &J2XY_cuda, nX - 1, nY - 1);*/
+  SetTensorZero(&J2_cpu, &J2_cuda, nX, nY, nZ);
+  /*SetMatrixZero(&J2XY_cpu, &J2XY_cuda, nX - 1, nY - 1);*/
 
   // displacement
   SetTensorZero(&Ux_cpu, &Ux_cuda, nX + 1, nY, nZ);
