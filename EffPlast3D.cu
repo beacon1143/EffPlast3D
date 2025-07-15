@@ -441,19 +441,19 @@ void EffPlast3D::ComputeEffParams(const size_t step, const double loadStepValue,
       }
     } // for(iter), iteration loop
 
-      /* AVERAGING */
-    gpuErrchk(cudaMemcpy(P_cpu, P_cuda, nX * nY * nZ * sizeof(double), cudaMemcpyDeviceToHost));
+    /* AVERAGING */
+    /*gpuErrchk(cudaMemcpy(P_cpu, P_cuda, nX * nY * nZ * sizeof(double), cudaMemcpyDeviceToHost));
     gpuErrchk(cudaMemcpy(tauXX_cpu, tauXX_cuda, nX * nY * nZ * sizeof(double), cudaMemcpyDeviceToHost));
     gpuErrchk(cudaMemcpy(tauYY_cpu, tauYY_cuda, nX * nY * nZ * sizeof(double), cudaMemcpyDeviceToHost));
     gpuErrchk(cudaMemcpy(tauZZ_cpu, tauZZ_cuda, nX * nY * nZ * sizeof(double), cudaMemcpyDeviceToHost));
     gpuErrchk(cudaMemcpy(tauXY_cpu, tauXY_cuda, (nX - 1) * (nY - 1) * nZ * sizeof(double), cudaMemcpyDeviceToHost));
     gpuErrchk(cudaMemcpy(tauXZ_cpu, tauXZ_cuda, (nX - 1) * nY * (nZ - 1) * sizeof(double), cudaMemcpyDeviceToHost));
     gpuErrchk(cudaMemcpy(tauYZ_cpu, tauYZ_cuda, nX * (nY - 1) * (nZ - 1) * sizeof(double), cudaMemcpyDeviceToHost));
-    /*gpuErrchk(cudaMemcpy(tauXYav_cpu, tauXYav_cuda, nX * nY * sizeof(double), cudaMemcpyDeviceToHost));*/
+    //gpuErrchk(cudaMemcpy(tauXYav_cpu, tauXYav_cuda, nX * nY * sizeof(double), cudaMemcpyDeviceToHost));
     gpuErrchk(cudaMemcpy(J2_cpu, J2_cuda, nX * nY * nZ * sizeof(double), cudaMemcpyDeviceToHost));
     gpuErrchk(cudaMemcpy(Ux_cpu, Ux_cuda, (nX + 1) * nY * nZ * sizeof(double), cudaMemcpyDeviceToHost));
     gpuErrchk(cudaMemcpy(Uy_cpu, Uy_cuda, nX * (nY + 1) * nZ * sizeof(double), cudaMemcpyDeviceToHost));
-    gpuErrchk(cudaMemcpy(Uz_cpu, Uz_cuda, nX * nY * (nZ + 1) * sizeof(double), cudaMemcpyDeviceToHost));
+    gpuErrchk(cudaMemcpy(Uz_cpu, Uz_cuda, nX * nY * (nZ + 1) * sizeof(double), cudaMemcpyDeviceToHost));*/
   } // for(it), action loop
 }
 
