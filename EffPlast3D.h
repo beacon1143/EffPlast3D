@@ -163,8 +163,8 @@ private:
 	[[deprecated]] double getdPhi();
 
 	// console and log file output
-	/*void printStepInfo(const size_t step);
-	void printCalculationType();
+	void printStepInfo(const size_t step);
+	/*void printCalculationType();
 	void printEffectiveModuli();
 	void printWarnings();*/
 	void printDuration(int elapsed_sec);

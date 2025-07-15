@@ -282,7 +282,7 @@ double EffPlast3D::ComputeEffModuli(const double initLoadValue, [[deprecated]] c
 }
 
 void EffPlast3D::ComputeEffParams(const size_t step, const double loadStepValue, const std::array<double, 6>& loadType, const size_t nTimeSteps) {
-  //printStepInfo(step);
+  printStepInfo(step);
 
   /*deltaP[step].resize(nTimeSteps);
   deltaPper[step].resize(nTimeSteps);
@@ -548,6 +548,30 @@ double EffPlast3D::FindMaxAbs(const double* const arr, const int size) {
   return max_el;
 }
 
+void EffPlast3D::printStepInfo(const size_t step) {
+  std::cout << "\nLOAD STEP " << step + 1 << " FROM " << NL << ": ";
+  log_file << "\nLOAD STEP " << step + 1 << " FROM " << NL << ": ";
+  switch (step) {
+  case 0:
+    std::cout << "PRELOADING\n";
+    log_file << "PRELOADING\n";
+    break;
+  case 1:
+    std::cout << "SMALL HYDROSTATIC INCREMENT\n";
+    log_file << "SMALL HYDROSTATIC INCREMENT\n";
+    break;
+  case 2:
+    std::cout << "SMALL DEVIATORIC INCREMENT\n";
+    log_file << "SMALL DEVIATORIC INCREMENT\n";
+    break;
+  default:
+    throw std::invalid_argument("ERROR:  Wrong step index!\n");
+  }
+  std::cout << "Porosity is " << porosity * 100 << "%\n";
+  log_file << "Porosity is " << porosity * 100 << "%\n";
+  std::cout << "Grid resolution is " << nX << "x" << nY << "x" << nZ << "\n\n";
+  log_file << "Grid resolution is " << nX << "x" << nY << "x" << nZ << "\n\n";
+}
 void EffPlast3D::printDuration(int elapsed_sec) {
   if (elapsed_sec < 60) {
     std::cout << "\nCalculation time is " << elapsed_sec << " sec\n";
