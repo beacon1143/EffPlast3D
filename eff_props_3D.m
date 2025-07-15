@@ -22,7 +22,7 @@ nIter = 10000;
 eIter = 1.0e-5;
 iDevice = 0;
 
-needCPUcalculation = true;
+needCPUcalculation = false;
 
 Nx  = 8 * nGrid;     % number of space steps
 Ny  = 8 * nGrid;
@@ -36,6 +36,23 @@ system(['nvcc -O 3 -allow-unsupported-compiler -o ', outname, ' -DDEVICE_IDX=', 
 system(['.\', outname, '.exe ', num2str(initLoadValue), ' ', num2str(loadType(1)), ' ', num2str(loadType(2)), ' ', num2str(loadType(3)), ' ', num2str(loadType(4)), ' ', num2str(loadType(5)), ' ', num2str(loadType(6)), ' ', num2str(nTimeSteps)]); %, ' ' num2str(addLoadValueStep)]);
 
 if not(needCPUcalculation)
+  PcXY = read_data_2D('data\PcXY', Nx, Nx, Ny);
+  J2cXY = read_data_2D('data\J2cXY', Nx, Nx, Ny);
+  
+  % POSTPROCESSING
+  subplot(1, 2, 1)
+  imagesc(PcXY)
+  colorbar
+  title('PcXY')
+  axis image
+  
+  subplot(1, 2, 2)
+  imagesc(J2cXY)
+  colorbar
+  title('J2cXY')
+  axis image
+  
+  drawnow
   
 else % needCPUcalculation
   PmXY = read_data_2D('data\PmXY', Nx, Nx, Ny);
