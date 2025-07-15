@@ -3,7 +3,7 @@ function [Keff, Geff] = get_sigma_3D(Lx, Ly, Lz, loadValue, loadType, nGrid, nTi
   rho0 = 1.0;                         % density
   K0   = 1.0;                         % bulk modulus
   G0   = 0.01;                         % shear modulus
-  coh  = Y * sqrt(2.0);
+  coh  = Y * sqrt(3.0);
   P0 = 0.0; %1.0 * coh;
   %porosity = 0.005;
   rad = (0.75 * porosity * Lx * Ly * Lz / (pi * N ^ 3)) ^ (1 / 3);
@@ -64,6 +64,8 @@ function [Keff, Geff] = get_sigma_3D(Lx, Ly, Lz, loadValue, loadType, nGrid, nTi
     Pinit   = zeros(Nx, Ny, Nz);            % initial hydrostatic stress
     P       = zeros(Nx, Ny, Nz);
     tauxyAv = zeros(Nx, Ny, Nz);
+    tauxzAv = zeros(Nx, Ny, Nz);
+    tauyzAv = zeros(Nx, Ny, Nz);
     Pinit(sqrt(x.*x + y.*y + z.*z) < rad) = P0;    % hydrostatic stress (ball part of tensor)
     Ux    = zeros(Nx + 1, Ny, Nz);        % displacement
     Uy    = zeros(Nx, Ny + 1, Nz);
@@ -77,8 +79,10 @@ function [Keff, Geff] = get_sigma_3D(Lx, Ly, Lz, loadValue, loadType, nGrid, nTi
     tauxy = zeros(Nx - 1, Ny - 1, Nz);
     tauxz = zeros(Nx - 1, Ny, Nz - 1);
     tauyz = zeros(Nx, Ny - 1, Nz - 1);
-    %J2 = zeros(Nx, Ny, Nz);
-    %J2xy = zeros(Nx - 1, Ny - 1, Nz);
+    J2 = zeros(Nx, Ny, Nz);
+    J2xy = zeros(Nx - 1, Ny - 1, Nz);
+    J2xz = zeros(Nx - 1, Ny, Nz - 1);
+    J2yz = zeros(Nx, Ny - 1, Nz - 1);
     %Plast = zeros(Nx, Ny, Nz);
     %PlastXY = zeros(Nx - 1, Ny - 1, Nz);
     
@@ -127,7 +131,38 @@ function [Keff, Geff] = get_sigma_3D(Lx, Ly, Lz, loadValue, loadType, nGrid, nTi
         end % for(i)
         
         % tauIJ for plasticity
+        tauxyAv(2:end-1, 2:end-1, :) = av4(tauxy, 1);        
+        tauxyAv(1, 2:end-1, :) = tauxyAv(2, 2:end-1, :);
+        tauxyAv(end, 2:end-1, :) = tauxyAv(end-1, 2:end-1, :);
+        tauxyAv(2:end-1, 1, :) = tauxyAv(2:end-1, 2, :);
+        tauxyAv(2:end-1, end, :) = tauxyAv(2:end-1, end-1, :);
+        tauxyAv(1, 1, :) = 0.5 * (tauxyAv(1, 2, :) + tauxyAv(2, 1, :));
+        tauxyAv(end, 1, :) = 0.5 * (tauxyAv(end, 2, :) + tauxyAv(end-1, 1, :));
+        tauxyAv(1, end, :) = 0.5 * (tauxyAv(2, end, :) + tauxyAv(1, end-1, :));
+        tauxyAv(end, end, :) = 0.5 * (tauxyAv(end, end-1, :) + tauxyAv(end-1, end, :));
+        
+        tauxzAv(2:end-1, :, 2:end-1) = av4(tauxz, 2);
+        tauxzAv(1, :, 2:end-1) = tauxzAv(2, :, 2:end-1);
+        tauxzAv(end, :, 2:end-1) = tauxzAv(end-1, :, 2:end-1);
+        tauxzAv(2:end-1, :, 1) = tauxzAv(2:end-1, :, 2);
+        tauxzAv(2:end-1, :, end) = tauxzAv(2:end-1, :, end-1);
+        tauxzAv(1, :, 1) = 0.5 * (tauxzAv(1, :, 2) + tauxzAv(2, :, 1));
+        tauxzAv(end, :, 1) = 0.5 * (tauxzAv(end, :, 2) + tauxzAv(end - 1, :, 1));
+        tauxzAv(1, :, end) = 0.5 * (tauxzAv(2, :, end) + tauxzAv(1, :, end - 1));
+        tauxzAv(end, :, end) = 0.5 * (tauxzAv(end, :, end-1) + tauxzAv(end-1, :, end));
+        
+        tauyzAv(:, 2:end-1, 2:end-1) = av4(tauyz, 3);
+        tauyzAv(:, 1, 2:end-1) = tauyzAv(:, 2, 2:end-1);
+        tauyzAv(:, end, 2:end-1) = tauyzAv(:, end-1, 2:end-1);
+        tauyzAv(:, 2:end-1, 1) = tauyzAv(:, 2:end-1, 2);
+        tauyzAv(:, 2:end-1, end) = tauyzAv(:, 2:end-1, end-1);
+        tauyzAv(:, 1, 1) = 0.5 * (tauyzAv(:, 1, 2) + tauyzAv(:, 2, 1));
+        tauyzAv(:, end, 1) = 0.5 * (tauyzAv(:, end, 2) + tauyzAv(:, end-1, 1));
+        tauyzAv(:, 1, end) = 0.5 * (tauyzAv(:, 2, end) + tauyzAv(:, 1, end-1));
+        tauyzAv(:, end, end) = 0.5 * (tauyzAv(:, end, end-1) + tauyzAv(:, end-1, end));
+        
         % plasticity
+        J2 = sqrt(tauxx .^ 2 + tauyy .^ 2 + tauzz .^ 2 + 2.0 * (tauxyAv .^ 2 + tauxzAv .^ 2 + tauyzAv .^ 2));    % Mises criteria
         
         % motion equation
         dVxdt = diff(-P(:,2:end-1,2:end-1) + tauxx(:,2:end-1,2:end-1), 1, 1)/dX / rho0 + (diff(tauxy(:,:,2:end-1),1,2)/dY + diff(tauxz(:, 2:end-1, :), 1, 3)/dZ) / rho0;
@@ -171,6 +206,10 @@ function [Keff, Geff] = get_sigma_3D(Lx, Ly, Lz, loadValue, loadType, nGrid, nTi
     
     fil = fopen(strcat('data\PmYZ_', int2str(Nx), '_.dat'), 'wb');
     fwrite(fil, P(end/2, :, :), 'double');
+    fclose(fil);
+    
+    fil = fopen(strcat('data\J2mXY_', int2str(Nx), '_.dat'), 'wb');
+    fwrite(fil, J2(:, :, end/2), 'double');
     fclose(fil);
     
     fil = fopen(strcat('data\tauXXm_', int2str(Nx), '_.dat'), 'wb');

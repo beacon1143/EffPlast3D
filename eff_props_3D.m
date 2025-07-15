@@ -10,13 +10,13 @@ Lz  = 20.0;                         % physical height
 initLoadValue = -0.00004;
 loadType = [1.0, 1.0, 1.0, 0.0, 0.0, 0.0];
 Y = 0.00001;
-nPores = 3;
+nPores = 1;
 porosity = 0.01;
 rad = (0.75 * porosity * Lx * Ly * Lz / (pi * nPores ^ 3)) ^ (1 / 3);
 nTasks = 2;
 
 % NUMERICS
-nGrid = 8;
+nGrid = 4;
 nTimeSteps = 1;
 nIter = 10000;
 eIter = 1.0e-5;
@@ -41,6 +41,7 @@ else % needCPUcalculation
   PmXY = read_data_2D('data\PmXY', Nx, Nx, Ny);
   PmXZ = read_data_2D('data\PmXZ', Nx, Nx, Ny);
   PmYZ = read_data_2D('data\PmYZ', Nx, Nx, Ny);
+  J2mXY = read_data_2D('data\J2mXY', Nx, Nx, Ny);
   tauXXm = read_data_2D('data\tauXXm', Nx, Nx, Ny);
   tauYYm = read_data_2D('data\tauYYm', Nx, Nx, Ny);
   tauXZmXY = read_data_2D('data\tauXZmXY', Nx, Nx - 1, Ny);
@@ -59,9 +60,9 @@ else % needCPUcalculation
   
   % POSTPROCESSING
   subplot(2, 3, 1)
-  imagesc(PmXY)
+  imagesc(J2mXY)
   colorbar
-  title('PmXY')
+  title('J2mXY')
   axis image
   
   subplot(2, 3, 2)
