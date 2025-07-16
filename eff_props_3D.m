@@ -16,13 +16,13 @@ rad = (0.75 * porosity * Lx * Ly * Lz / (pi * nPores ^ 3)) ^ (1 / 3);
 nTasks = 2;
 
 % NUMERICS
-nGrid = 4;
+nGrid = 8;
 nTimeSteps = 1;
-nIter = 10000;
-eIter = 1.0e-5;
+nIter = 1000000;
+eIter = 1.0e-7;
 iDevice = 0;
 
-needCPUcalculation = true;
+needCPUcalculation = false;
 
 Nx  = 8 * nGrid;     % number of space steps
 Ny  = 8 * nGrid;
