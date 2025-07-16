@@ -219,6 +219,14 @@ function [Keff, Geff] = get_sigma_3D(Lx, Ly, Lz, loadValue, loadType, nGrid, nTi
     fwrite(fil, J2xy(:, :, end/2), 'double');
     fclose(fil);
     
+    fil = fopen(strcat('data\J2XZmXY_', int2str(Nx), '_.dat'), 'wb');
+    fwrite(fil, J2xz(:, :, (end-1)/2), 'double');
+    fclose(fil);
+    
+    fil = fopen(strcat('data\J2YZmXY_', int2str(Nx), '_.dat'), 'wb');
+    fwrite(fil, J2yz(:, :, (end-1)/2), 'double');
+    fclose(fil);
+    
     fil = fopen(strcat('data\tauXXm_', int2str(Nx), '_.dat'), 'wb');
     fwrite(fil, tauxx(:, :, end/2), 'double');
     fclose(fil);

@@ -60,6 +60,8 @@ else % needCPUcalculation
   PmYZ = read_data_2D('data\PmYZ', Nx, Nx, Ny);
   J2mXY = read_data_2D('data\J2mXY', Nx, Nx, Ny);
   J2XYmXY = read_data_2D('data\J2XYmXY', Nx, Nx - 1, Ny - 1);
+  J2XZmXY = read_data_2D('data\J2XZmXY', Nx, Nx - 1, Ny);
+  J2YZmXY = read_data_2D('data\J2YZmXY', Nx, Nx, Ny - 1);
   tauXXm = read_data_2D('data\tauXXm', Nx, Nx, Ny);
   tauYYm = read_data_2D('data\tauYYm', Nx, Nx, Ny);
   tauXZmXY = read_data_2D('data\tauXZmXY', Nx, Nx - 1, Ny);
@@ -68,12 +70,18 @@ else % needCPUcalculation
   
   PcXY = read_data_2D('data\PcXY', Nx, Nx, Ny);
   J2cXY = read_data_2D('data\J2cXY', Nx, Nx, Ny);
+  J2XYcXY = read_data_2D('data\J2XYcXY', Nx, Nx - 1, Ny - 1);
+  J2XZcXY = read_data_2D('data\J2XZcXY', Nx, Nx - 1, Ny);
+  J2YZcXY = read_data_2D('data\J2YZcXY', Nx, Nx, Ny - 1);
   tauXZcXY = read_data_2D('data\tauXZcXY', Nx, Nx - 1, Ny);
   UxcXY = read_data_2D('data\UxcXY', Nx, Nx + 1, Ny);
   VxcXY = read_data_2D('data\VxcXY', Nx, Nx + 1, Ny);
   
   diffPxy = PmXY - PcXY;
   diffJ2xy = J2mXY - J2cXY;
+  diffJ2XYxy = J2XYmXY - J2XYcXY;
+  diffJ2XZxy = J2XZmXY - J2XZcXY;
+  diffJ2YZxy = J2YZmXY - J2YZcXY;
   difftauXZxy = tauXZmXY - tauXZcXY;
   diffUxXY = UxmXY - UxcXY;
   diffVxXY = VxmXY - VxcXY;
@@ -116,21 +124,21 @@ else % needCPUcalculation
   %axis image
   
   subplot(2, 3, 4)
-  imagesc(J2XYmXY)
+  imagesc(J2YZmXY)
   colorbar
-  title('J2XYmXY')
+  title('J2YZmXY')
   axis image
   
   subplot(2, 3, 5)
-  imagesc(J2cXY)
+  imagesc(J2YZcXY)
   colorbar
-  title('J2cXY')
+  title('J2YZcXY')
   axis image
   
   subplot(2, 3, 6)
-  imagesc(diffJ2xy)
+  imagesc(diffJ2YZxy)
   colorbar
-  title('diffJ2xy')
+  title('diffJ2YZxy')
   axis image
   
   %subplot(2, 2, 2)

@@ -190,7 +190,7 @@ __global__ void ComputeStress(const double* const Ux, const double* const Uy, co
 __global__ void ComputeJ2(double* tauXX, double* tauYY, double* tauZZ,
   double* tauXY, double* tauXZ, double* tauYZ,
   double* const tauXYav, double* const tauXZav, double* const tauYZav,
-  double* const J2, /*double* const J2XY, double* const J2XZ, double* const J2YZ,*/
+  double* const J2, double* const J2XY, double* const J2XZ, double* const J2YZ,
   const long int nX, const long int nY, const long int nZ)
 {
   int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -226,6 +226,72 @@ __global__ void ComputeJ2(double* tauXX, double* tauYY, double* tauZZ,
       tauYZav[k * nX * nY + j * nX + i] * tauYZav[k * nX * nY + j * nX + i]
     )
   );
+  if (i < nX - 1 && j < nY - 1 && k > 0 && k < nZ - 1) {
+    J2XY[k * (nX - 1) * (nY - 1) + j * (nX - 1) + i] = sqrt(
+      pow(0.25 * (tauXX[k * nX * nY + (j + 1) * nX + i + 1] + tauXX[k * nX * nY + (j + 1) * nX + i] + tauXX[k * nX * nY + j * nX + i + 1] + tauXX[k * nX * nY + j * nX + i]), 2.0) +
+      pow(0.25 * (tauYY[k * nX * nY + (j + 1) * nX + i + 1] + tauYY[k * nX * nY + (j + 1) * nX + i] + tauYY[k * nX * nY + j * nX + i + 1] + tauYY[k * nX * nY + j * nX + i]), 2.0) +
+      pow(0.25 * (tauZZ[k * nX * nY + (j + 1) * nX + i + 1] + tauZZ[k * nX * nY + (j + 1) * nX + i] + tauZZ[k * nX * nY + j * nX + i + 1] + tauZZ[k * nX * nY + j * nX + i]), 2.0) +
+      2.0 * (
+        pow(tauXY[k * (nX - 1) * (nY - 1) + j * (nX - 1) + i], 2.0) +
+        pow(0.25 * (
+          tauXZ[(k - 1) * (nX - 1) * nY + j * (nX - 1) + i] + tauXZ[(k - 1) * (nX - 1) * nY + (j + 1) * (nX - 1) + i] + 
+          tauXZ[k * (nX - 1) * nY + j * (nX - 1) + i] + tauXZ[k * (nX - 1) * nY + (j + 1) * (nX - 1) + i]
+        ), 2.0) +
+        pow(0.25 * (
+          tauYZ[(k - 1) * nX * (nY - 1) + j * nX + i] + tauYZ[(k - 1) * nX * (nY - 1) + j * nX + i + 1] +
+          tauYZ[k * nX * (nY - 1) + j * nX + i] + tauYZ[k * nX * (nY - 1) + j * nX + i + 1]
+        ), 2.0)
+      )
+    ); // sqrt
+  }
+  if (i < nX - 1 && j > 0 && j < nY - 1 && k < nZ - 1) {
+    J2XZ[k * (nX - 1) * nY + j * (nX - 1) + i] = sqrt(
+      pow(0.25 * (
+        tauXX[k * nX * nY + j * nX + i + 1] + tauXX[k * nX * nY + j * nX + i] + tauXX[(k + 1) * nX * nY + j * nX + i + 1] + tauXX[(k + 1) * nX * nY + j * nX + i]
+        ), 2.0) +
+      pow(0.25 * (
+        tauYY[k * nX * nY + j * nX + i + 1] + tauYY[k * nX * nY + j * nX + i] + tauYY[(k + 1) * nX * nY + j * nX + i + 1] + tauYY[(k + 1) * nX * nY + j * nX + i]
+        ), 2.0) +
+      pow(0.25 * (
+        tauZZ[k * nX * nY + j * nX + i + 1] + tauZZ[k * nX * nY + j * nX + i] + tauZZ[(k + 1) * nX * nY + j * nX + i + 1] + tauZZ[(k + 1) * nX * nY + j * nX + i]
+        ), 2.0) +
+      2.0 * (
+        pow(tauXZ[k * (nX - 1) * nY + j * (nX - 1) + i], 2.0) +
+        pow(0.25 * (
+          tauXY[k * (nX - 1) * (nY - 1) + (j - 1) * (nX - 1) + i] + tauXY[k * (nX - 1) * (nY - 1) + j * (nX - 1) + i] +
+          tauXY[(k + 1) * (nX - 1) * (nY - 1) + (j - 1) * (nX - 1) + i] + tauXY[(k + 1) * (nX - 1) * (nY - 1) + j * (nX - 1) + i]
+        ), 2.0) +
+        pow(0.25 * (
+          tauYZ[k * nX * (nY - 1) + (j - 1) * nX + i] + tauYZ[k * nX * (nY - 1) + (j - 1) * nX + i + 1] +
+          tauYZ[k * nX * (nY - 1) + j * nX + i] + tauYZ[k * nX * (nY - 1) + j * nX + i + 1]
+        ), 2.0)
+      )
+    ); // sqrt
+  }
+  if (i > 0 && i < nX - 1 && j < nY - 1 && k < nZ - 1) {
+    J2YZ[k * nX * (nY - 1) + j * nX + i] = sqrt(
+      pow(0.25 * (
+        tauXX[(k + 1) * nX * nY + j * nX + i] + tauXX[k * nX * nY + j * nX + i] + tauXX[(k + 1) * nX * nY + (j + 1) * nX + i] + tauXX[k * nX * nY + (j + 1) * nX + i]
+        ), 2.0) +
+      pow(0.25 * (
+        tauYY[(k + 1) * nX * nY + j * nX + i] + tauYY[k * nX * nY + j * nX + i] + tauYY[(k + 1) * nX * nY + (j + 1) * nX + i] + tauYY[k * nX * nY + (j + 1) * nX + i]
+        ), 2.0) +
+      pow(0.25 * (
+        tauZZ[(k + 1) * nX * nY + j * nX + i] + tauZZ[k * nX * nY + j * nX + i] + tauZZ[(k + 1) * nX * nY + (j + 1) * nX + i] + tauZZ[k * nX * nY + (j + 1) * nX + i]
+        ), 2.0) +
+      2.0 * (
+        pow(tauYZ[k * nX * (nY - 1) + j * nX + i], 2.0) +
+        pow(0.25 * (
+          tauXY[k * (nX - 1) * (nY - 1) + j * (nX - 1) + i - 1] + tauXY[k * (nX - 1) * (nY - 1) + j * (nX - 1) + i] +
+          tauXY[(k + 1) * (nX - 1) * (nY - 1) + j * (nX - 1) + i - 1] + tauXY[(k + 1) * (nX - 1) * (nY - 1) + j * (nX - 1) + i]
+        ), 2.0) +
+        pow(0.25 * (
+          tauXZ[k * (nX - 1) * nY + j * (nX - 1) + i - 1] + tauXZ[k * (nX - 1) * nY + j * (nX - 1) + i] +
+          tauXZ[k * (nX - 1) * nY + (j + 1) * (nX - 1) + i - 1] + tauXZ[k * (nX - 1) * nY + (j + 1) * (nX - 1) + i]
+        ), 2.0)
+      )
+    ); // sqrt
+  }
 }
 
 double EffPlast3D::ComputeEffModuli(const double initLoadValue, [[deprecated]] const double loadValue, 
@@ -263,6 +329,9 @@ double EffPlast3D::ComputeEffModuli(const double initLoadValue, [[deprecated]] c
   SaveSlice(tauXX_cpu, tauXX_cuda, nX, nY, nZ, nZ / 2, "data/tauXXc_" + std::to_string(8 * NGRID) + "_.dat");
   SaveSlice(tauXZ_cpu, tauXZ_cuda, nX - 1, nY, nZ - 1, nZ / 2, "data/tauXZcXY_" + std::to_string(8 * NGRID) + "_.dat");
   SaveSlice(J2_cpu, J2_cuda, nX, nY, nZ, nZ / 2, "data/J2cXY_" + std::to_string(8 * NGRID) + "_.dat");
+  SaveSlice(J2XY_cpu, J2XY_cuda, nX - 1, nY - 1, nZ, nZ / 2, "data/J2XYcXY_" + std::to_string(8 * NGRID) + "_.dat");
+  SaveSlice(J2XZ_cpu, J2XZ_cuda, nX - 1, nY, nZ - 1, nZ / 2, "data/J2XZcXY_" + std::to_string(8 * NGRID) + "_.dat");
+  SaveSlice(J2YZ_cpu, J2YZ_cuda, nX, nY - 1, nZ - 1, nZ / 2, "data/J2YZcXY_" + std::to_string(8 * NGRID) + "_.dat");
   SaveSlice(Ux_cpu, Ux_cuda, nX + 1, nY, nZ, nZ / 2, "data/UxcXY_" + std::to_string(8 * NGRID) + "_.dat");
   SaveSlice(Vx_cpu, Vx_cuda, nX + 1, nY, nZ, nZ / 2, "data/VxcXY_" + std::to_string(8 * NGRID) + "_.dat");
   //SaveMatrix(tauYY_cpu, tauYY_cuda, nX, nY, "data/tauYYc_" + std::to_string(32 * NGRID) + "_.dat");
@@ -391,7 +460,7 @@ void EffPlast3D::ComputeEffParams(const size_t step, const double loadStepValue,
       ComputeJ2<<<grid, block>>>(tauXX_cuda, tauYY_cuda, tauZZ_cuda,
         tauXY_cuda, tauXZ_cuda, tauYZ_cuda,
         tauXYav_cuda, tauXZav_cuda, tauYZav_cuda,
-        J2_cuda, /*J2XY_cuda, J2XZ_cuda, J2YZ_cuda,*/
+        J2_cuda, J2XY_cuda, J2XZ_cuda, J2YZ_cuda,
         nX, nY, nZ);
       gpuErrchk(cudaDeviceSynchronize());
       /*if (NL > 1) {
@@ -667,7 +736,9 @@ EffPlast3D::EffPlast3D() {
 
   // plasticity
   SetTensorZero(&J2_cpu, &J2_cuda, nX, nY, nZ);
-  /*SetMatrixZero(&J2XY_cpu, &J2XY_cuda, nX - 1, nY - 1);*/
+  SetTensorZero(&J2XY_cpu, &J2XY_cuda, nX - 1, nY - 1, nZ);
+  SetTensorZero(&J2XZ_cpu, &J2XZ_cuda, nX - 1, nY, nZ - 1);
+  SetTensorZero(&J2YZ_cpu, &J2YZ_cuda, nX, nY - 1, nZ - 1);
 
   // displacement
   SetTensorZero(&Ux_cpu, &Ux_cuda, nX + 1, nY, nZ);

@@ -87,7 +87,9 @@ private:
 	double* tauXZav_cpu, * tauXZav_cuda;
 	double* tauYZav_cpu, * tauYZav_cuda;
 	double* J2_cpu, * J2_cuda;                       // plasticity
-	double* J2XY_cpu, * J2XY_cuda;
+	double* J2XY_cpu, *J2XY_cuda;
+	double* J2XZ_cpu, *J2XZ_cuda;
+	double* J2YZ_cpu, *J2YZ_cuda;
 	double* Ux_cpu, * Ux_cuda;                       // displacement
 	double* Uy_cpu, * Uy_cuda;
 	double* Uz_cpu, * Uz_cuda;
