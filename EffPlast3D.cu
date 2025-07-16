@@ -388,7 +388,7 @@ double EffPlast3D::ComputeEffModuli(const double initLoadValue, [[deprecated]] c
   //SaveMatrix(J2_cpu, J2_cuda, nX, nY, "data/J2c_" + std::to_string(32 * NGRID) + "_.dat");
   //SaveMatrix(Uy_cpu, Uy_cuda, nX, nY + 1, "data/Uyc_" + std::to_string(32 * NGRID) + "_.dat");
 
-  /*const double tauXYmax = FindMaxAbs(tauXZ_cpu, (nX - 1) * nY * (nZ - 1));
+  /*const double tauXYmax = findMaxAbs(tauXZ_cpu, (nX - 1) * nY * (nZ - 1));
   std::cout << "tauXYmax = " << tauXYmax << "\n";*/
 
   //gpuErrchk(cudaDeviceReset());
@@ -540,10 +540,10 @@ void EffPlast3D::ComputeEffParams(const size_t step, const double loadStepValue,
         gpuErrchk(cudaMemcpy(Vz_cpu, Vz_cuda, nX * nY * (nZ + 1) * sizeof(double), cudaMemcpyDeviceToHost));
 
         error = (
-          FindMaxAbs(Vx_cpu, (nX + 1) * nY * nZ) / (dX * (nX - 1)) + 
-          FindMaxAbs(Vy_cpu, nX * (nY + 1) * nZ) / (dY * (nY - 1)) +
-          FindMaxAbs(Vz_cpu, nX * nY * (nZ + 1)) / (dZ * (nZ - 1))
-          ) * dT /
+          findMaxAbs(Vx_cpu, (nX + 1) * nY * nZ) / (dX * (nX - 1)) + 
+          findMaxAbs(Vy_cpu, nX * (nY + 1) * nZ) / (dY * (nY - 1)) +
+          findMaxAbs(Vz_cpu, nX * nY * (nZ + 1)) / (dZ * (nZ - 1))
+        ) * dT /
           (std::max(std::abs(curEffStrain[0]), std::max(curEffStrain[1], curEffStrain[2])));
         //(std::abs(loadStepValue) * std::max(std::max(std::abs(loadType[0]), std::abs(loadType[1])), std::abs(loadType[2])));
 
@@ -678,7 +678,7 @@ void EffPlast3D::SaveSlice(double* const A_cpu, const double* const A_cuda, cons
   A_filw.write((char*)A_cpu + sizeof(double) * m * n * k, sizeof(double) * m * n);
 }
 
-double EffPlast3D::FindMaxAbs(const double* const arr, const int size) {
+double EffPlast3D::findMaxAbs(const double* const arr, const int size) {
   double max_el = 0.0;
   for (int i = 0; i < size; i++) {
     if (std::abs(arr[i]) > std::abs(max_el)) {
