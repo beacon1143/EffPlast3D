@@ -110,8 +110,8 @@ private:
 	std::set<std::pair<int, int>> empty_spaces;
 	const double incPercent = 0.005;    // for calculation of effective moduli with plasticity
 
-																			// output parameters
-	std::array<std::vector<double>, NL> deltaP;
+	// output parameters
+	std::array<std::vector<double>, NL> PeffNonper;
 	std::array<std::vector<double>, NL> deltaPper;
 	std::array<std::vector<double>, NL> tauInfty;
 	std::array<std::vector<double>, NL> dPhi;
@@ -157,8 +157,8 @@ private:
 	static double FindMaxAbs(const double* const arr, const int size);
 	//static double FindMaxAbs(const std::vector<double>& vec);
 
-	// p and tau from static numeric solution for analytical effective moduli 
-	double getDeltaP_honest();
+	// averaging 
+	double getPeffNonper() const;
 	double getDeltaP_periodic();
 	double getDeltaP_approx(const double Exx, const double Eyy);
 	double getTauInfty_honestest();

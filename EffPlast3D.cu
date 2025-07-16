@@ -402,8 +402,8 @@ double EffPlast3D::ComputeEffModuli(const double initLoadValue, [[deprecated]] c
 void EffPlast3D::ComputeEffParams(const size_t step, const double loadStepValue, const std::array<double, 6>& loadType, const size_t nTimeSteps) {
   printStepInfo(step);
 
-  /*deltaP[step].resize(nTimeSteps);
-  deltaPper[step].resize(nTimeSteps);
+  PeffNonper[step].resize(nTimeSteps);
+  /*deltaPper[step].resize(nTimeSteps);
   tauInfty[step].resize(nTimeSteps);
   dPhi[step].resize(nTimeSteps);
   dPhiPer[step].resize(nTimeSteps);
@@ -563,8 +563,8 @@ void EffPlast3D::ComputeEffParams(const size_t step, const double loadStepValue,
     } // for(iter), iteration loop
 
     /* AVERAGING */
-    /*gpuErrchk(cudaMemcpy(P_cpu, P_cuda, nX * nY * nZ * sizeof(double), cudaMemcpyDeviceToHost));
-    gpuErrchk(cudaMemcpy(tauXX_cpu, tauXX_cuda, nX * nY * nZ * sizeof(double), cudaMemcpyDeviceToHost));
+    gpuErrchk(cudaMemcpy(P_cpu, P_cuda, nX * nY * nZ * sizeof(double), cudaMemcpyDeviceToHost));
+    /*gpuErrchk(cudaMemcpy(tauXX_cpu, tauXX_cuda, nX * nY * nZ * sizeof(double), cudaMemcpyDeviceToHost));
     gpuErrchk(cudaMemcpy(tauYY_cpu, tauYY_cuda, nX * nY * nZ * sizeof(double), cudaMemcpyDeviceToHost));
     gpuErrchk(cudaMemcpy(tauZZ_cpu, tauZZ_cuda, nX * nY * nZ * sizeof(double), cudaMemcpyDeviceToHost));
     gpuErrchk(cudaMemcpy(tauXY_cpu, tauXY_cuda, (nX - 1) * (nY - 1) * nZ * sizeof(double), cudaMemcpyDeviceToHost));
@@ -575,6 +575,11 @@ void EffPlast3D::ComputeEffParams(const size_t step, const double loadStepValue,
     gpuErrchk(cudaMemcpy(Ux_cpu, Ux_cuda, (nX + 1) * nY * nZ * sizeof(double), cudaMemcpyDeviceToHost));
     gpuErrchk(cudaMemcpy(Uy_cpu, Uy_cuda, nX * (nY + 1) * nZ * sizeof(double), cudaMemcpyDeviceToHost));
     gpuErrchk(cudaMemcpy(Uz_cpu, Uz_cuda, nX * nY * (nZ + 1) * sizeof(double), cudaMemcpyDeviceToHost));*/
+
+    PeffNonper[step][it] = getPeffNonper();
+
+    std::cout << "    P / Y = " << PeffNonper[step][it] / Y << '\n';
+    log_file << "    P / Y = " << PeffNonper[step][it] / Y << '\n';
   } // for(it), action loop
 }
 
@@ -667,6 +672,32 @@ double EffPlast3D::FindMaxAbs(const double* const arr, const int size) {
     }
   }
   return max_el;
+}
+
+double EffPlast3D::getPeffNonper() const {
+  double PeffX{0.0}, PeffY{0.0}, PeffZ{0.0};
+  for (int j = 1; j < nY - 1; j++) {
+    for (int k = 1; k < nZ - 1; k++) {
+      PeffX += P_cpu[k * nX * nY + j * nX + 0];
+      PeffX += P_cpu[k * nX * nY + j * nX + nX - 1];
+    }
+  }
+  PeffX /= 2.0 * (nY - 2) * (nZ - 2);
+  for (int i = 1; i < nX - 1; i++) {
+    for (int k = 1; k < nZ - 1; k++) {
+      PeffY += P_cpu[k * nX * nY + 0 * nX + i];
+      PeffY += P_cpu[k * nX * nY + (nY - 1) * nX + i];
+    }
+  }
+  PeffY /= 2.0 * (nX - 2) * (nZ - 2);
+  for (int i = 1; i < nX - 1; i++) {
+    for (int j = 1; j < nY - 1; j++) {
+      PeffZ += P_cpu[0 * nX * nY + j * nX + i];
+      PeffZ += P_cpu[(nZ - 1) * nX * nY + j * nX + i];
+    }
+  }
+  PeffZ /= 2.0 * (nX - 2) * (nY - 2);
+  return (PeffX + PeffY + PeffZ) / 3.0;
 }
 
 void EffPlast3D::printStepInfo(const size_t step) {
