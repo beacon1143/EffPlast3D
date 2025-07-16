@@ -156,6 +156,7 @@ private:
 
 	static double FindMaxAbs(const double* const arr, const int size);
 	//static double FindMaxAbs(const std::vector<double>& vec);
+	void zeroingPoresDisp();
 
 	// averaging 
 	double getPeffNonper() const;

@@ -38,18 +38,39 @@ system(['.\', outname, '.exe ', num2str(initLoadValue), ' ', num2str(loadType(1)
 if not(needCPUcalculation)
   PcXY = read_data_2D('data\PcXY', Nx, Nx, Ny);
   J2cXY = read_data_2D('data\J2cXY', Nx, Nx, Ny);
+  UxcXY = read_data_2D('data\UxcXY', Nx, Nx + 1, Ny);
+  UycXY = read_data_2D('data\UycXY', Nx, Nx, Ny + 1);
+  UzcXY = read_data_2D('data\UzcXY', Nx, Nx, Ny);
   
   % POSTPROCESSING
-  subplot(1, 2, 1)
-  imagesc(PcXY)
+  %subplot(1, 2, 1)
+  %imagesc(PcXY)
+  %colorbar
+  %title('PcXY')
+  %axis image
+  
+  %subplot(1, 2, 2)
+  %imagesc(J2cXY)
+  %colorbar
+  %title('J2cXY')
+  %axis image
+  
+  subplot(1, 3, 1)
+  imagesc(UxcXY)
   colorbar
-  title('PcXY')
+  title('UxcXY')
   axis image
   
-  subplot(1, 2, 2)
-  imagesc(J2cXY)
+  subplot(1, 3, 2)
+  imagesc(UycXY)
   colorbar
-  title('J2cXY')
+  title('UycXY')
+  axis image
+  
+  subplot(1, 3, 3)
+  imagesc(UzcXY)
+  colorbar
+  title('UzcXY')
   axis image
   
   drawnow

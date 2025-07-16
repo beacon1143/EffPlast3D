@@ -571,10 +571,10 @@ void EffPlast3D::ComputeEffParams(const size_t step, const double loadStepValue,
     gpuErrchk(cudaMemcpy(tauXZ_cpu, tauXZ_cuda, (nX - 1) * nY * (nZ - 1) * sizeof(double), cudaMemcpyDeviceToHost));
     gpuErrchk(cudaMemcpy(tauYZ_cpu, tauYZ_cuda, nX * (nY - 1) * (nZ - 1) * sizeof(double), cudaMemcpyDeviceToHost));
     //gpuErrchk(cudaMemcpy(tauXYav_cpu, tauXYav_cuda, nX * nY * sizeof(double), cudaMemcpyDeviceToHost));
-    gpuErrchk(cudaMemcpy(J2_cpu, J2_cuda, nX * nY * nZ * sizeof(double), cudaMemcpyDeviceToHost));
+    gpuErrchk(cudaMemcpy(J2_cpu, J2_cuda, nX * nY * nZ * sizeof(double), cudaMemcpyDeviceToHost));*/
     gpuErrchk(cudaMemcpy(Ux_cpu, Ux_cuda, (nX + 1) * nY * nZ * sizeof(double), cudaMemcpyDeviceToHost));
     gpuErrchk(cudaMemcpy(Uy_cpu, Uy_cuda, nX * (nY + 1) * nZ * sizeof(double), cudaMemcpyDeviceToHost));
-    gpuErrchk(cudaMemcpy(Uz_cpu, Uz_cuda, nX * nY * (nZ + 1) * sizeof(double), cudaMemcpyDeviceToHost));*/
+    gpuErrchk(cudaMemcpy(Uz_cpu, Uz_cuda, nX * nY * (nZ + 1) * sizeof(double), cudaMemcpyDeviceToHost));
 
     PeffNonper[step][it] = getPeffNonper();
     PeffPer[step][it] = getPeffPer();
@@ -585,6 +585,15 @@ void EffPlast3D::ComputeEffParams(const size_t step, const double loadStepValue,
       std::cout << "    Pper / Y = " << PeffPer[step][it] / Y << '\n';
       log_file << "    Pper / Y = " << PeffPer[step][it] / Y << '\n';
     }
+
+    zeroingPoresDisp();
+    SaveSlice(Ux_cpu, Ux_cuda, nX + 1, nY, nZ, nZ / 2, "data/UxcXY_" + std::to_string(8 * NGRID) + "_.dat");
+    SaveSlice(Uy_cpu, Uy_cuda, nX, nY + 1, nZ, nZ / 2, "data/UycXY_" + std::to_string(8 * NGRID) + "_.dat");
+    SaveSlice(Uz_cpu, Uz_cuda, nX, nY, nZ + 1, nZ / 2, "data/UzcXY_" + std::to_string(8 * NGRID) + "_.dat");
+
+    const double Phi0 = 3.1415926 * 4.0 * pow(rad * nPores, 3.0) / (3.0 * lX * lY * lZ);
+    std::cout << "    Phi0 = " << Phi0 << '\n';
+    log_file << "    Phi0 = " << Phi0 << '\n';
   } // for(it), action loop
 }
 
@@ -678,7 +687,82 @@ double EffPlast3D::FindMaxAbs(const double* const arr, const int size) {
   }
   return max_el;
 }
+void EffPlast3D::zeroingPoresDisp() {
+  // set zero Ux in the pores
+  for (int i = 0; i < nX + 1; i++) {
+    for (int j = 0; j < nY; j++) {
+      for (int k = 0; k < nZ; k++) {
+        const double x = -0.5 * dX * nX + dX * i;
+        const double y = -0.5 * dY * (nY - 1) + dY * j;
+        const double z = -0.5 * dZ * (nZ - 1) + dZ * k;
+        for (int a = 0; a < nPores; a++) {
+          for (int b = 0; b < nPores; b++) {
+            for (int c = 0; c < nPores; c++) {
+              if (sqrt(
+                (x - 0.5 * lX * (1.0 - 1.0 / nPores) + (lX / nPores) * a) * (x - 0.5 * lX * (1.0 - 1.0 / nPores) + (lX / nPores) * a) +
+                (y - 0.5 * lY * (1.0 - 1.0 / nPores) + (lY / nPores) * b) * (y - 0.5 * lY * (1.0 - 1.0 / nPores) + (lY / nPores) * b) +
+                (z - 0.5 * lZ * (1.0 - 1.0 / nPores) + (lZ / nPores) * c) * (z - 0.5 * lZ * (1.0 - 1.0 / nPores) + (lZ / nPores) * c)
+              ) < rad)
+              {
+                Ux_cpu[k * (nX + 1) * nY + j * (nX + 1) + i] = 0.0;
+              }
+            } // for(c)
+          } // for(b)
+        } // for(a)
+      } // for(k)
+    } // for(j)
+  }
+  // set zero Uy in the pores
+  for (int i = 0; i < nX; i++) {
+    for (int j = 0; j < nY + 1; j++) {
+      for (int k = 0; k < nZ; k++) {
+        const double x = -0.5 * dX * (nX - 1) + dX * i;
+        const double y = -0.5 * dY * nY + dY * j;
+        const double z = -0.5 * dZ * (nZ - 1) + dZ * k;
+        for (int a = 0; a < nPores; a++) {
+          for (int b = 0; b < nPores; b++) {
+            for (int c = 0; c < nPores; c++) {
+              if (sqrt(
+                (x - 0.5 * lX * (1.0 - 1.0 / nPores) + (lX / nPores) * a) * (x - 0.5 * lX * (1.0 - 1.0 / nPores) + (lX / nPores) * a) +
+                (y - 0.5 * lY * (1.0 - 1.0 / nPores) + (lY / nPores) * b) * (y - 0.5 * lY * (1.0 - 1.0 / nPores) + (lY / nPores) * b) +
+                (z - 0.5 * lZ * (1.0 - 1.0 / nPores) + (lZ / nPores) * c) * (z - 0.5 * lZ * (1.0 - 1.0 / nPores) + (lZ / nPores) * c)
+              ) < rad)
+              {
+                Uy_cpu[k * nX * (nY + 1) + j * nX + i] = 0.0;
+              }
+            } // for(c)
+          } // for(b)
+        } // for(a)
+      } // for(k)
+    } // for(j)
+  }
+  // set zero Uz in the pores
+  for (int i = 0; i < nX; i++) {
+    for (int j = 0; j < nY; j++) {
+      for (int k = 0; k < nZ + 1; k++) {
+        const double x = -0.5 * dX * (nX - 1) + dX * i;
+        const double y = -0.5 * dY * (nY - 1) + dY * j;
+        const double z = -0.5 * dZ * nZ + dZ * k;
+        for (int a = 0; a < nPores; a++) {
+          for (int b = 0; b < nPores; b++) {
+            for (int c = 0; c < nPores; c++) {
+              if (sqrt(
+                (x - 0.5 * lX * (1.0 - 1.0 / nPores) + (lX / nPores) * a) * (x - 0.5 * lX * (1.0 - 1.0 / nPores) + (lX / nPores) * a) +
+                (y - 0.5 * lY * (1.0 - 1.0 / nPores) + (lY / nPores) * b) * (y - 0.5 * lY * (1.0 - 1.0 / nPores) + (lY / nPores) * b) +
+                (z - 0.5 * lZ * (1.0 - 1.0 / nPores) + (lZ / nPores) * c) * (z - 0.5 * lZ * (1.0 - 1.0 / nPores) + (lZ / nPores) * c)
+              ) < rad)
+              {
+                Uz_cpu[k * nX * nY + j * nX + i] = 0.0;
+              }
+            } // for(c)
+          } // for(b)
+        } // for(a)
+      } // for(k)
+    } // for(j)
+  }
+}
 
+/* AVERAGING */
 double EffPlast3D::getPeffNonper() const {
   double PeffX{0.0}, PeffY{0.0}, PeffZ{0.0};
   for (int j = 1; j < nY - 1; j++) {
@@ -733,6 +817,7 @@ double EffPlast3D::getPeffPer() const {
   return (PeffX + PeffY + PeffZ) / 3.0;
 }
 
+/* CONSOLE AND LOG FILE OUTPUT */
 void EffPlast3D::printStepInfo(const size_t step) {
   std::cout << "\nLOAD STEP " << step + 1 << " FROM " << NL << ": ";
   log_file << "\nLOAD STEP " << step + 1 << " FROM " << NL << ": ";
