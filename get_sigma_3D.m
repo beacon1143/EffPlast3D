@@ -167,6 +167,25 @@ function [Keff, Geff] = get_sigma_3D(Lx, Ly, Lz, loadValue, loadType, nGrid, nTi
         J2xz(:, 2:end-1, :) = sqrt(av4(tauxx(:, 2:end-1, :), 2).^2 + av4(tauyy(:, 2:end-1, :), 2).^2 + av4(tauzz(:, 2:end-1, :), 2).^2 + 2.0 * (tauxz(:, 2:end-1, :).^2 + av4(tauxy, 3).^2 + av4(tauyz, 1).^2));
         J2yz(2:end-1, :, :) = sqrt(av4(tauxx(2:end-1, :, :), 3).^2 + av4(tauyy(2:end-1, :, :), 3).^2 + av4(tauzz(2:end-1, :, :), 3).^2 + 2.0 * (tauyz(2:end-1, :, :).^2 + av4(tauxy, 2).^2 + av4(tauxz, 1).^2));
         
+        iPlast = find(J2 > coh);
+        if ~isempty(iPlast)
+          tauxx(iPlast) = tauxx(iPlast) .* coh ./ J2(iPlast);
+          tauyy(iPlast) = tauyy(iPlast) .* coh ./ J2(iPlast);
+          tauzz(iPlast) = tauzz(iPlast) .* coh ./ J2(iPlast);
+        end % if
+        iPlastXY = find(J2xy > coh);
+        if ~isempty(iPlastXY)
+          tauxy(iPlastXY) = tauxy(iPlastXY) .* coh ./ J2xy(iPlastXY);
+        end % if
+        iPlastXZ = find(J2xz > coh);
+        if ~isempty(iPlastXZ)
+          tauxz(iPlastXZ) = tauxz(iPlastXZ) .* coh ./ J2xz(iPlastXZ);
+        end % if
+        iPlastYZ = find(J2yz > coh);
+        if ~isempty(iPlastYZ)
+          tauyz(iPlastYZ) = tauyz(iPlastYZ) .* coh ./ J2yz(iPlastYZ);
+        end % if
+        
         % motion equation
         dVxdt = diff(-P(:,2:end-1,2:end-1) + tauxx(:,2:end-1,2:end-1), 1, 1)/dX / rho0 + (diff(tauxy(:,:,2:end-1),1,2)/dY + diff(tauxz(:, 2:end-1, :), 1, 3)/dZ) / rho0;
         Vx(2:end-1, 2:end-1, 2:end-1) = Vx(2:end-1, 2:end-1, 2:end-1) * (1 - dt * dampX) + dVxdt * dt;
@@ -181,7 +200,7 @@ function [Keff, Geff] = get_sigma_3D(Lx, Ly, Lz, loadValue, loadType, nGrid, nTi
         Uz = Uz + Vz * dt;
         
         % exit criteria
-        if mod(iter, 100) == 0
+        if mod(iter, 1000) == 0
           error = (max(abs(Vx(:))) / Lx + max(abs(Vy(:))) / Ly + max(abs(Vz(:))) / Lz) * dt / max(abs(loadValue * loadType));
           outStr = sprintf('Iteration %d: Error is %d', iter, error);
           disp(outStr);
