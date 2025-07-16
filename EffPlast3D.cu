@@ -353,7 +353,7 @@ double EffPlast3D::ComputeEffModuli(const double initLoadValue, [[deprecated]] c
   //std::array<double, 6> sphericalLoadType{0.5 * (loadType_[0] + loadType_[1]), 0.5 * (loadType_[0] + loadType_[1]), 0.0};
   //std::array<double, 6> deviatoricLoadType{loadType_[0] - sphericalLoadType[0], loadType_[1] - sphericalLoadType[1], loadType_[2]};
 
-  //printCalculationType();
+  printCalculationType();
 
   ComputeEffParams(0, initLoadValue, loadType_, nTimeSteps_);
   /*if (NL == 1) {
@@ -756,6 +756,24 @@ void EffPlast3D::printStepInfo(const size_t step) {
   log_file << "Porosity is " << porosity * 100 << "%\n";
   std::cout << "Grid resolution is " << nX << "x" << nY << "x" << nZ << "\n\n";
   log_file << "Grid resolution is " << nX << "x" << nY << "x" << nZ << "\n\n";
+}
+void EffPlast3D::printCalculationType() {
+  switch (NL) {
+  case 1:
+    std::cout << "\nPURE ELASTIC CALCULATION\nESTIMATION OF THE EFFECTIVE BULK MODULI\n";
+    log_file << "\nPURE ELASTIC CALCULATION\nESTIMATION OF THE EFFECTIVE BULK MODULI\n";
+    break;
+  case 2:
+    std::cout << "\nELASTOPLASTIC CALCULATION\nESTIMATION OF THE EFFECTIVE BULK MODULI\n";
+    log_file << "\nELASTOPLASTIC CALCULATION\nESTIMATION OF THE EFFECTIVE BULK MODULI\n";
+    break;
+  /*case 3:
+    std::cout << "\nELASTOPLASTIC CALCULATION\nESTIMATION OF THE EFFECTIVE BULK MODULI AND THE EFFECTIVE SHEAR MODULUS\n";
+    log_file << "\nELASTOPLASTIC CALCULATION\nESTIMATION OF THE EFFECTIVE BULK MODULI AND THE EFFECTIVE SHEAR MODULUS\n";
+    break;*/
+  default:
+    throw std::invalid_argument("ERROR:  Wrong number of loads!\n");
+  }
 }
 void EffPlast3D::printDuration(int elapsed_sec) {
   if (elapsed_sec < 60) {

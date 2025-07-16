@@ -168,8 +168,8 @@ private:
 
 	// console and log file output
 	void printStepInfo(const size_t step);
-	/*void printCalculationType();
-	void printEffectiveModuli();
+	void printCalculationType();
+	/*void printEffectiveModuli();
 	void printWarnings();*/
 	void printDuration(int elapsed_sec);
 
