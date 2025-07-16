@@ -49,6 +49,8 @@ inline void gpuAssert(cudaError_t code, const char* file, int line)
 
 #define gpuGetLastError() gpuErrchk(cudaGetLastError())
 
+__constant__ double coh_cuda;
+
 class EffPlast3D {
 public:
 	double ComputeEffModuli( double initLoadValue, double loadValue, 

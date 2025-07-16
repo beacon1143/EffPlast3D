@@ -298,39 +298,34 @@ __global__ void ComputePlasticity(double* tauXX, double* tauYY, double* tauZZ,
   double* tauXY, double* tauXZ, double* tauYZ,
   /*double* const tauXYav, double* const tauXZav, double* const tauYZav,*/
   double* const J2, double* const J2XY, double* const J2XZ, double* const J2YZ,
-  const double* const pa,
   const long int nX, const long int nY, const long int nZ)
 {
   int i = blockIdx.x * blockDim.x + threadIdx.x;
   int j = blockIdx.y * blockDim.y + threadIdx.y;
   int k = blockIdx.z * blockDim.z + threadIdx.z;
 
-  const double coh = pa[10];
-
   // plasticity
-  if (J2[k * nX * nY + j * nX + i] > coh) {
-    tauXX[k * nX * nY + j * nX + i] *= coh / J2[k * nX * nY + j * nX + i];
-    tauYY[k * nX * nY + j * nX + i] *= coh / J2[k * nX * nY + j * nX + i];
-    tauZZ[k * nX * nY + j * nX + i] *= coh / J2[k * nX * nY + j * nX + i];
+  if (J2[k * nX * nY + j * nX + i] > coh_cuda) {
+    tauXX[k * nX * nY + j * nX + i] *= coh_cuda / J2[k * nX * nY + j * nX + i];
+    tauYY[k * nX * nY + j * nX + i] *= coh_cuda / J2[k * nX * nY + j * nX + i];
+    tauZZ[k * nX * nY + j * nX + i] *= coh_cuda / J2[k * nX * nY + j * nX + i];
     //tauXYav[j * nX + i] *= coh / J2[j * nX + i];
     //J2[j * nX + i] = sqrt(tauXX[j * nX + i] * tauXX[j * nX + i] + tauYY[j * nX + i] * tauYY[j * nX + i] + 2.0 * tauXYav[j * nX + i] * tauXYav[j * nX + i]);
   }
 
   if (i < nX - 1 && j < nY - 1) {
-    if (J2XY[k * (nX - 1) * (nY - 1) + j * (nX - 1) + i] > coh) {
-      tauXY[k * (nX - 1) * (nY - 1) + j * (nX - 1) + i] *= coh / J2XY[k * (nX - 1) * (nY - 1) + j * (nX - 1) + i];
+    if (J2XY[k * (nX - 1) * (nY - 1) + j * (nX - 1) + i] > coh_cuda) {
+      tauXY[k * (nX - 1) * (nY - 1) + j * (nX - 1) + i] *= coh_cuda / J2XY[k * (nX - 1) * (nY - 1) + j * (nX - 1) + i];
     }
   }
   if (i < nX - 1 && k < nZ - 1) {
-    if (J2XZ[k * (nX - 1) * nY + j * (nX - 1) + i] > coh) {
-      tauXZ[k * (nX - 1) * nY + j * (nX - 1) + i] *= 
-        coh / J2XZ[k * (nX - 1) * nY + j * (nX - 1) + i];
+    if (J2XZ[k * (nX - 1) * nY + j * (nX - 1) + i] > coh_cuda) {
+      tauXZ[k * (nX - 1) * nY + j * (nX - 1) + i] *= coh_cuda / J2XZ[k * (nX - 1) * nY + j * (nX - 1) + i];
     }
   }
   if (j < nY - 1 && k < nZ - 1) {
-    if (J2YZ[k * nX * (nY - 1) + j * nX + i] > coh) {
-      tauYZ[k * nX * (nY - 1) + j * nX + i] *= 
-        coh / J2YZ[k * nX * (nY - 1) + j * nX + i];
+    if (J2YZ[k * nX * (nY - 1) + j * nX + i] > coh_cuda) {
+      tauYZ[k * nX * (nY - 1) + j * nX + i] *= coh_cuda / J2YZ[k * nX * (nY - 1) + j * nX + i];
     }
   }
 }
@@ -510,7 +505,6 @@ void EffPlast3D::ComputeEffParams(const size_t step, const double loadStepValue,
           tauXY_cuda, tauXZ_cuda, tauYZ_cuda,
           /*tauXYav_cuda, tauXZav_cuda, tauYZav_cuda,*/
           J2_cuda, J2XY_cuda, J2XZ_cuda, J2YZ_cuda,
-          pa_cuda,
           nX, nY, nZ);
         gpuErrchk(cudaDeviceSynchronize());
       }
@@ -754,6 +748,8 @@ EffPlast3D::EffPlast3D() {
   rad = pa_cpu[11];
   Y = pa_cpu[10] / sqrt(3.0);
   nPores = pa_cpu[12];
+
+  cudaMemcpyToSymbol(coh_cuda, &pa_cpu[10], sizeof(double));
 
   /* SPACE ARRAYS */
   // materials
