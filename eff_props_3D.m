@@ -7,10 +7,10 @@ colormap jet
 Lx  = 20.0;                         % physical length
 Ly  = 20.0;                         % physical width
 Lz  = 20.0;                         % physical height
-initLoadValue = -0.00004;
+initLoadValue = -0.00002;
 loadType = [1.0, 1.0, 1.0, 0.0, 0.0, 0.0];
 Y = 0.00001;
-nPores = 1;
+nPores = 3;
 porosity = 0.01;
 rad = (0.75 * porosity * Lx * Ly * Lz / (pi * nPores ^ 3)) ^ (1 / 3);
 nTasks = 2;

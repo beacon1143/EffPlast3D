@@ -403,8 +403,8 @@ void EffPlast3D::ComputeEffParams(const size_t step, const double loadStepValue,
   printStepInfo(step);
 
   PeffNonper[step].resize(nTimeSteps);
-  /*deltaPper[step].resize(nTimeSteps);
-  tauInfty[step].resize(nTimeSteps);
+  PeffPer[step].resize(nTimeSteps);
+  /*tauInfty[step].resize(nTimeSteps);
   dPhi[step].resize(nTimeSteps);
   dPhiPer[step].resize(nTimeSteps);
   epsilon[step].resize(nTimeSteps);
@@ -577,9 +577,14 @@ void EffPlast3D::ComputeEffParams(const size_t step, const double loadStepValue,
     gpuErrchk(cudaMemcpy(Uz_cpu, Uz_cuda, nX * nY * (nZ + 1) * sizeof(double), cudaMemcpyDeviceToHost));*/
 
     PeffNonper[step][it] = getPeffNonper();
+    PeffPer[step][it] = getPeffPer();
 
     std::cout << "    P / Y = " << PeffNonper[step][it] / Y << '\n';
     log_file << "    P / Y = " << PeffNonper[step][it] / Y << '\n';
+    if (nPores > 2) {
+      std::cout << "    Pper / Y = " << PeffPer[step][it] / Y << '\n';
+      log_file << "    Pper / Y = " << PeffPer[step][it] / Y << '\n';
+    }
   } // for(it), action loop
 }
 
@@ -697,6 +702,34 @@ double EffPlast3D::getPeffNonper() const {
     }
   }
   PeffZ /= 2.0 * (nX - 2) * (nY - 2);
+  return (PeffX + PeffY + PeffZ) / 3.0;
+}
+double EffPlast3D::getPeffPer() const {
+  if (nPores <= 2) {
+    return 0.0;
+  }
+  double PeffX{0.0}, PeffY{0.0}, PeffZ{0.0};
+  for (int j = nY / nPores; j < nY * (nPores - 1) / nPores; j++) {
+    for (int k = nZ / nPores; k < nZ * (nPores - 1) / nPores; k++) {
+      PeffX += P_cpu[k * nX * nY + j * nX + nX / nPores];
+      PeffX += P_cpu[k * nX * nY + j * nX + nX  * (nPores - 1) / nPores];
+    }
+  }
+  PeffX /= 2.0 * (nY - 2) * (nZ - 2) * (nPores - 2) * (nPores - 2) / nPores / nPores;
+  for (int i = nX / nPores; i < nX * (nPores - 1) / nPores; i++) {
+    for (int k = nZ / nPores; k < nZ * (nPores - 1) / nPores; k++) {
+      PeffY += P_cpu[k * nX * nY + nY / nPores * nX + i];
+      PeffY += P_cpu[k * nX * nY + nY * (nPores - 1) / nPores * nX + i];
+    }
+  }
+  PeffY /= 2.0 * (nX - 2) * (nZ - 2) * (nPores - 2) * (nPores - 2) / nPores / nPores;
+  for (int i = nX / nPores; i < nX * (nPores - 1) / nPores; i++) {
+    for (int j = nY / nPores; j < nY * (nPores - 1) / nPores; j++) {
+      PeffZ += P_cpu[nZ / nPores * nX * nY + j * nX + i];
+      PeffZ += P_cpu[nZ * (nPores - 1) / nPores * nX * nY + j * nX + i];
+    }
+  }
+  PeffZ /= 2.0 * (nX - 2) * (nY - 2) * (nPores - 2) * (nPores - 2) / nPores / nPores;
   return (PeffX + PeffY + PeffZ) / 3.0;
 }
 

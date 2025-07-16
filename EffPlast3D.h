@@ -70,7 +70,7 @@ private:
 	double K0, G0;                                   // bulk modulus and shear modulus
 	double E0, nu0;                                  // Young's modulus and Poisson's ratio
 	double Y;                                        // yield stress
-	double nPores;
+	long int nPores;
 
 	// input variables
 	unsigned int nTimeSteps_;                        // number of time steps for preloading static calculation
@@ -112,7 +112,7 @@ private:
 
 	// output parameters
 	std::array<std::vector<double>, NL> PeffNonper;
-	std::array<std::vector<double>, NL> deltaPper;
+	std::array<std::vector<double>, NL> PeffPer;
 	std::array<std::vector<double>, NL> tauInfty;
 	std::array<std::vector<double>, NL> dPhi;
 	std::array<std::vector<double>, NL> dPhiPer;
@@ -159,7 +159,7 @@ private:
 
 	// averaging 
 	double getPeffNonper() const;
-	double getDeltaP_periodic();
+	double getPeffPer() const;
 	double getDeltaP_approx(const double Exx, const double Eyy);
 	double getTauInfty_honestest();
 	double getTauInfty_honest();
