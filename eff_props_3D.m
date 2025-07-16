@@ -87,55 +87,91 @@ else % needCPUcalculation
   diffVxXY = VxmXY - VxcXY;
   
   % POSTPROCESSING
-  subplot(2, 3, 1)
+  subplot(3, 5, 1)
   imagesc(PmXY)
   colorbar
   title('PmXY')
   axis image
   
-  subplot(2, 3, 2)
+  subplot(3, 5, 6)
   imagesc(PcXY)
   colorbar
   title('PcXY')
   axis image
   
-  subplot(2, 3, 3)
+  subplot(3, 5, 11)
   imagesc(diffPxy)
   colorbar
   title('diffPxy')
   axis image
   
-  %subplot(2, 3, 1)
-  %imagesc(tauXZmXY)
-  %colorbar
-  %title('tauXZmXY')
-  %axis image
+  subplot(3, 5, 2)
+  imagesc(J2mXY)
+  colorbar
+  title('J2mXY')
+  axis image
   
-  %subplot(2, 3, 2)
-  %imagesc(tauXZcXY)
-  %colorbar
-  %title('tauXZcXY')
-  %axis image
+  subplot(3, 5, 7)
+  imagesc(J2cXY)
+  colorbar
+  title('J2cXY')
+  axis image
   
-  %subplot(2, 3, 3)
-  %imagesc(difftauXZxy)
-  %colorbar
-  %title('difftauXZxy')
-  %axis image
+  subplot(3, 5, 12)
+  imagesc(diffJ2xy)
+  colorbar
+  title('diffJ2xy')
+  axis image
   
-  subplot(2, 3, 4)
+  subplot(3, 5, 3)
+  imagesc(J2XYmXY)
+  colorbar
+  title('J2XYmXY')
+  axis image
+  
+  subplot(3, 5, 8)
+  imagesc(J2XYcXY)
+  colorbar
+  title('J2XYcXY')
+  axis image
+  
+  subplot(3, 5, 13)
+  imagesc(diffJ2XYxy)
+  colorbar
+  title('diffJ2XYxy')
+  axis image
+  
+  subplot(3, 5, 4)
+  imagesc(J2XZmXY)
+  colorbar
+  title('J2XZmXY')
+  axis image
+  
+  subplot(3, 5, 9)
+  imagesc(J2XZcXY)
+  colorbar
+  title('J2XZcXY')
+  axis image
+  
+  subplot(3, 5, 14)
+  imagesc(diffJ2XZxy)
+  colorbar
+  title('diffJ2XZxy')
+  axis image
+  
+  subplot(3, 5, 5)
   imagesc(J2YZmXY)
   colorbar
   title('J2YZmXY')
   axis image
   
-  subplot(2, 3, 5)
+  subplot(3, 5, 10)
   imagesc(J2YZcXY)
   colorbar
   title('J2YZcXY')
   axis image
   
-  subplot(2, 3, 6)
+  subplot(3, 5, 15)
   imagesc(diffJ2YZxy)
   colorbar
   title('diffJ2YZxy')
