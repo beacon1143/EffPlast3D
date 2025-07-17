@@ -184,7 +184,7 @@ private:
 	double getKphiPer_PureElast();
 	double getKd_PureElast();
 	double getKdPer_PureElast();
-	double getKphi_ElastPlast();
+	double getKphiNonper_ElastPlast();
 	double getKphiPer_ElastPlast();
 	double getKd_ElastPlast();
 	double getKdPer_ElastPlast();

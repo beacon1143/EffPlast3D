@@ -350,7 +350,12 @@ double EffPlast3D::ComputeEffModuli(const double initLoadValue, [[deprecated]] c
   nTimeSteps_ = nTimeSteps;
   loadType_ = loadType;
 
-  //std::array<double, 6> sphericalLoadType{0.5 * (loadType_[0] + loadType_[1]), 0.5 * (loadType_[0] + loadType_[1]), 0.0};
+  std::array<double, 6> sphericalLoadType{
+    (loadType_[0] + loadType_[1] + loadType_[2]) / 3.0,
+    (loadType_[0] + loadType_[1] + loadType_[2]) / 3.0,
+    (loadType_[0] + loadType_[1] + loadType_[2]) / 3.0,
+    0.0, 0.0, 0.0
+  };
   //std::array<double, 6> deviatoricLoadType{loadType_[0] - sphericalLoadType[0], loadType_[1] - sphericalLoadType[1], loadType_[2]};
 
   printCalculationType();
@@ -359,12 +364,12 @@ double EffPlast3D::ComputeEffModuli(const double initLoadValue, [[deprecated]] c
   if (NL == 1) {
     calcBulkModuli_PureElast();
   }
-  /*else {
+  else {
     ComputeEffParams(1, initLoadValue * incPercent, sphericalLoadType, 1);
     calcBulkModuli_ElastPlast();
   }
 
-  if (NL == 3) {
+  /*if (NL == 3) {
     ComputeEffParams(2, initLoadValue * incPercent, deviatoricLoadType, 1);
     calcShearModulus();
   }
@@ -1006,12 +1011,21 @@ void EffPlast3D::printDuration(int elapsed_sec) {
 /* FINAL EFFECTIVE MODULI CALCULATION */
 void EffPlast3D::calcBulkModuli_PureElast() {
   eff_moduli_num_nonper.Kphi = getKphiNonper_PureElast();
-  std::cout << "    ==============\n" << "    KphiNonper = " << eff_moduli_num_nonper.Kphi << std::endl;
-  log_file << "    ==============\n" << "    KphiNonper = " << eff_moduli_num_nonper.Kphi << std::endl;
+  std::cout << "    ==============\n\n" << "KphiNonper = " << eff_moduli_num_nonper.Kphi << std::endl;
+  log_file << "    ==============\n\n" << "KphiNonper = " << eff_moduli_num_nonper.Kphi << std::endl;
 
   eff_moduli_num_per.Kphi = getKphiPer_PureElast();
-  std::cout << "    ==============\n" << "    KphiPer = " << eff_moduli_num_per.Kphi << std::endl;
-  log_file << "    ==============\n" << "    KphiPer = " << eff_moduli_num_per.Kphi << std::endl;
+  std::cout << "KphiPer = " << eff_moduli_num_per.Kphi << std::endl;
+  log_file << "KphiPer = " << eff_moduli_num_per.Kphi << std::endl;
+}
+void EffPlast3D::calcBulkModuli_ElastPlast() {
+  eff_moduli_num_nonper.Kphi = getKphiNonper_ElastPlast();
+  std::cout << "    ==============\n\n" << "KphiNonper = " << eff_moduli_num_nonper.Kphi << std::endl;
+  log_file << "    ==============\n\n" << "KphiNonper = " << eff_moduli_num_nonper.Kphi << std::endl;
+
+  eff_moduli_num_per.Kphi = getKphiPer_ElastPlast();
+  std::cout << "KphiPer = " << eff_moduli_num_per.Kphi << std::endl;
+  log_file << "KphiPer = " << eff_moduli_num_per.Kphi << std::endl;
 }
 // bulk moduli in the pure elastic case
 double EffPlast3D::getKphiNonper_PureElast() {
@@ -1022,6 +1036,16 @@ double EffPlast3D::getKphiNonper_PureElast() {
 double EffPlast3D::getKphiPer_PureElast() {
   const double Pinc = PeffPer[0][nTimeSteps_ - 1];
   const double phiInc = dPhiPer[0][nTimeSteps_ - 1];
+  return Pinc / phiInc;
+}
+double EffPlast3D::getKphiNonper_ElastPlast() {
+  const double Pinc = PeffNonper[1][0] - PeffNonper[0][nTimeSteps_ - 1];
+  const double phiInc = dPhiNonper[1][0] - dPhiNonper[0][nTimeSteps_ - 1];
+  return Pinc / phiInc;
+}
+double EffPlast3D::getKphiPer_ElastPlast() {
+  const double Pinc = PeffPer[1][0] - PeffPer[0][nTimeSteps_ - 1];
+  const double phiInc = dPhiPer[1][0] - dPhiPer[0][nTimeSteps_ - 1];
   return Pinc / phiInc;
 }
 

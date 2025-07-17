@@ -13,7 +13,7 @@ Y = 0.00001;
 nPores = 3;
 porosity = 0.01;
 rad = (0.75 * porosity * Lx * Ly * Lz / (pi * nPores ^ 3)) ^ (1 / 3);
-nTasks = 1;
+nTasks = 2;
 
 % NUMERICS
 nGrid = 16;
