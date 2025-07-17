@@ -1137,12 +1137,12 @@ EffPlast3D::EffPlast3D() {
   SetTensorZero(&tauXY_cpu, &tauXY_cuda, nX - 1, nY - 1, nZ);
   SetTensorZero(&tauXZ_cpu, &tauXZ_cuda, nX - 1, nY, nZ - 1);
   SetTensorZero(&tauYZ_cpu, &tauYZ_cuda, nX, nY - 1, nZ - 1);
-  SetTensorZero(&tauXYav_cpu, &tauXYav_cuda, nX, nY, nZ);
-  SetTensorZero(&tauXZav_cpu, &tauXZav_cuda, nX, nY, nZ);
-  SetTensorZero(&tauYZav_cpu, &tauYZav_cuda, nX, nY, nZ);
-
-  // plasticity
   if (NL > 1) {
+    SetTensorZero(&tauXYav_cpu, &tauXYav_cuda, nX, nY, nZ);
+    SetTensorZero(&tauXZav_cpu, &tauXZav_cuda, nX, nY, nZ);
+    SetTensorZero(&tauYZav_cpu, &tauYZav_cuda, nX, nY, nZ);
+
+    // plasticity
     SetTensorZero(&J2_cpu, &J2_cuda, nX, nY, nZ);
     SetTensorZero(&J2XY_cpu, &J2XY_cuda, nX - 1, nY - 1, nZ);
     SetTensorZero(&J2XZ_cpu, &J2XZ_cuda, nX - 1, nY, nZ - 1);
