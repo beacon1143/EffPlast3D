@@ -797,6 +797,8 @@ void EffPlast3D::zeroingPoresDisp() {
   }
 }
 void EffPlast3D::calcPoreVolume() const {
+  poreVolume43Pi = 0.0;
+  internalPoreVolume43Pi = 0.0;
   for (int a = 0; a < nPores; a++) {
     for (int b = 0; b < nPores; b++) {
       for (int c = 0; c < nPores; c++) {
