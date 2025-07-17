@@ -405,7 +405,7 @@ void EffPlast3D::ComputeEffParams(const size_t step, const double loadStepValue,
   PeffNonper[step].resize(nTimeSteps);
   PeffPer[step].resize(nTimeSteps);
   /*tauInfty[step].resize(nTimeSteps);*/
-  dPhi[step].resize(nTimeSteps);
+  dPhiNonper[step].resize(nTimeSteps);
   dPhiPer[step].resize(nTimeSteps);
   /*epsilon[step].resize(nTimeSteps);
   epsilonPer[step].resize(nTimeSteps);
@@ -587,21 +587,30 @@ void EffPlast3D::ComputeEffParams(const size_t step, const double loadStepValue,
     }
 
     zeroingPoresDisp();
-    SaveSlice(Ux_cpu, Ux_cuda, nX + 1, nY, nZ, nZ / 2, "data/UxcXY_" + std::to_string(8 * NGRID) + "_.dat");
+    /*SaveSlice(Ux_cpu, Ux_cuda, nX + 1, nY, nZ, nZ / 2, "data/UxcXY_" + std::to_string(8 * NGRID) + "_.dat");
     SaveSlice(Uy_cpu, Uy_cuda, nX, nY + 1, nZ, nZ / 2, "data/UycXY_" + std::to_string(8 * NGRID) + "_.dat");
-    SaveSlice(Uz_cpu, Uz_cuda, nX, nY, nZ + 1, nZ / 2, "data/UzcXY_" + std::to_string(8 * NGRID) + "_.dat");
+    SaveSlice(Uz_cpu, Uz_cuda, nX, nY, nZ + 1, nZ / 2, "data/UzcXY_" + std::to_string(8 * NGRID) + "_.dat");*/
     calcPoreVolume();
 
     const double Phi0 = 3.1415926 * 4.0 * pow(rad * nPores, 3.0) / (3.0 * lX * lY * lZ);
     //std::cout << "    Phi0 = " << Phi0 << '\n';
     log_file << "    Phi0 = " << Phi0 << '\n';
-    const double Phi = 3.1415926 * 4.0 * poreVolume43Pi / (3.0 * lX * lY * lZ);
-    //std::cout << "    Phi = " << Phi << '\n';
-    log_file << "    Phi = " << Phi << '\n';
+    const double PhiNonper = 3.1415926 * 4.0 * poreVolume43Pi / (3.0 * lX * lY * lZ);
+    //std::cout << "    PhiNonper = " << PhiNonper << '\n';
+    log_file << "    PhiNonper = " << PhiNonper << '\n';
+    const double PhiPer = nPores > 2 ? 
+      3.1415926 * 4.0 * internalPoreVolume43Pi / (3.0 * lX * lY * lZ * pow(static_cast<double>(nPores - 2) / nPores, 3.0)) :
+      0.0;
+    //std::cout << "    PhiPer = " << PhiPer << '\n';
+    log_file << "    PhiPer = " << PhiPer << '\n';
 
-    dPhi[step][it] = std::abs(Phi - Phi0);
-    std::cout << "    dPhi = " << dPhi[step][it] << '\n';
-    log_file << "    dPhi = " << dPhi[step][it] << '\n';
+
+    dPhiNonper[step][it] = std::abs(PhiNonper - Phi0);
+    std::cout << "    dPhiNonper = " << dPhiNonper[step][it] << '\n';
+    log_file << "    dPhiNonper = " << dPhiNonper[step][it] << '\n';
+    dPhiPer[step][it] = std::abs(PhiPer - Phi0);
+    std::cout << "    dPhiPer = " << dPhiPer[step][it] << '\n';
+    log_file << "    dPhiPer = " << dPhiPer[step][it] << '\n';
   } // for(it), action loop
 }
 
@@ -853,9 +862,9 @@ void EffPlast3D::calcPoreVolume() const {
 
         poreVolume43Pi += (rad + dRx) * (rad + dRy) * (rad + dRz);
         //std::cout << poreVolume43Pi << "\n";
-        /*if (a > 0 && b > 0 && c > 0 && a < nPores - 1 && b < nPores - 1 && c < nPores - 1) {
-          internalPoreVolumePi += (rad + dRx) * (rad + dRy);
-        }*/
+        if (a > 0 && b > 0 && c > 0 && a < nPores - 1 && b < nPores - 1 && c < nPores - 1) {
+          internalPoreVolume43Pi += (rad + dRx) * (rad + dRy) * (rad + dRz);
+        }
       } // for(c)
     } // for(b)
   } // for(a)
@@ -997,13 +1006,22 @@ void EffPlast3D::printDuration(int elapsed_sec) {
 /* FINAL EFFECTIVE MODULI CALCULATION */
 void EffPlast3D::calcBulkModuli_PureElast() {
   eff_moduli_num_nonper.Kphi = getKphiNonper_PureElast();
-  std::cout << "    ==============\n" << "    Kphi = " << eff_moduli_num_nonper.Kphi << std::endl;
-  log_file << "    ==============\n" << "    Kphi = " << eff_moduli_num_nonper.Kphi << std::endl;
+  std::cout << "    ==============\n" << "    KphiNonper = " << eff_moduli_num_nonper.Kphi << std::endl;
+  log_file << "    ==============\n" << "    KphiNonper = " << eff_moduli_num_nonper.Kphi << std::endl;
+
+  eff_moduli_num_per.Kphi = getKphiPer_PureElast();
+  std::cout << "    ==============\n" << "    KphiPer = " << eff_moduli_num_per.Kphi << std::endl;
+  log_file << "    ==============\n" << "    KphiPer = " << eff_moduli_num_per.Kphi << std::endl;
 }
 // bulk moduli in the pure elastic case
 double EffPlast3D::getKphiNonper_PureElast() {
   const double Pinc = PeffNonper[0][nTimeSteps_ - 1];
-  const double phiInc = dPhi[0][nTimeSteps_ - 1];
+  const double phiInc = dPhiNonper[0][nTimeSteps_ - 1];
+  return Pinc / phiInc;
+}
+double EffPlast3D::getKphiPer_PureElast() {
+  const double Pinc = PeffPer[0][nTimeSteps_ - 1];
+  const double phiInc = dPhiPer[0][nTimeSteps_ - 1];
   return Pinc / phiInc;
 }
 

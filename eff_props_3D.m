@@ -10,7 +10,7 @@ Lz  = 20.0;                         % physical height
 initLoadValue = -0.00002;
 loadType = [1.0, 1.0, 1.0, 0.0, 0.0, 0.0];
 Y = 0.00001;
-nPores = 1;
+nPores = 3;
 porosity = 0.01;
 rad = (0.75 * porosity * Lx * Ly * Lz / (pi * nPores ^ 3)) ^ (1 / 3);
 nTasks = 1;
@@ -38,40 +38,40 @@ system(['.\', outname, '.exe ', num2str(initLoadValue), ' ', num2str(loadType(1)
 if not(needCPUcalculation)
   PcXY = read_data_2D('data\PcXY', Nx, Nx, Ny);
   J2cXY = read_data_2D('data\J2cXY', Nx, Nx, Ny);
-  UxcXY = read_data_2D('data\UxcXY', Nx, Nx + 1, Ny);
-  UycXY = read_data_2D('data\UycXY', Nx, Nx, Ny + 1);
-  UzcXY = read_data_2D('data\UzcXY', Nx, Nx, Ny);
+  %UxcXY = read_data_2D('data\UxcXY', Nx, Nx + 1, Ny);
+  %UycXY = read_data_2D('data\UycXY', Nx, Nx, Ny + 1);
+  %UzcXY = read_data_2D('data\UzcXY', Nx, Nx, Ny);
   
   % POSTPROCESSING
-  %subplot(1, 2, 1)
-  %imagesc(PcXY)
+  subplot(1, 2, 1)
+  imagesc(PcXY)
+  colorbar
+  title('PcXY')
+  axis image
+  
+  subplot(1, 2, 2)
+  imagesc(J2cXY)
+  colorbar
+  title('J2cXY')
+  axis image
+  
+  %subplot(1, 3, 1)
+  %imagesc(UxcXY)
   %colorbar
-  %title('PcXY')
+  %title('UxcXY')
   %axis image
   
-  %subplot(1, 2, 2)
-  %imagesc(J2cXY)
+  %subplot(1, 3, 2)
+  %imagesc(UycXY)
   %colorbar
-  %title('J2cXY')
+  %title('UycXY')
   %axis image
   
-  subplot(1, 3, 1)
-  imagesc(UxcXY)
-  colorbar
-  title('UxcXY')
-  axis image
-  
-  subplot(1, 3, 2)
-  imagesc(UycXY)
-  colorbar
-  title('UycXY')
-  axis image
-  
-  subplot(1, 3, 3)
-  imagesc(UzcXY)
-  colorbar
-  title('UzcXY')
-  axis image
+  %subplot(1, 3, 3)
+  %imagesc(UzcXY)
+  %colorbar
+  %title('UzcXY')
+  %axis image
   
   drawnow
   

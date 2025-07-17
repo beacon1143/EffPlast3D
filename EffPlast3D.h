@@ -115,7 +115,7 @@ private:
 	std::array<std::vector<double>, NL> PeffNonper;
 	std::array<std::vector<double>, NL> PeffPer;
 	//std::array<std::vector<double>, NL> tauInfty;
-	std::array<std::vector<double>, NL> dPhi;
+	std::array<std::vector<double>, NL> dPhiNonper;
 	std::array<std::vector<double>, NL> dPhiPer;
 	std::array<double, 6> curEffStrain;
 	/*std::array<std::vector<std::array<double, 3>>, NL> epsilon;
