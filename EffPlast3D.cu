@@ -346,6 +346,10 @@ __global__ void ComputePlasticity(double* tauXX, double* tauYY, double* tauZZ,
 double EffPlast3D::ComputeEffModuli(const double initLoadValue, [[deprecated]] const double loadValue, 
   const unsigned int nTimeSteps, const std::array<double, 6>& loadType)
 {
+  if (nPores <= 0) {
+    throw std::invalid_argument("Error! The number of pores must be positive!\n");
+  }
+
   const auto start = std::chrono::system_clock::now();
   nTimeSteps_ = nTimeSteps;
   loadType_ = loadType;
@@ -809,6 +813,9 @@ void EffPlast3D::calcPoreVolume() const {
         size_t rxIdx = static_cast<size_t>(cxdX - rad / dX + 0.5 * nX);
         std::vector<double> dispXleft(5);
         //std::cout << "dispXleft:\n";
+        if (rxIdx < 1) {
+          throw std::out_of_range("Error in calcPoreVolume! Grid is too small or pores are too big!\n");
+        }
         for (int i = 0; i < 5; i++) {
           dispXleft[i] = Ux_cpu[czIdx * (nX + 1) * nY + cyIdx * (nX + 1) + rxIdx - 1 + i];
           //std::cout << "j = " << cyIdx << " i = " << rxIdx - 1 + i << "\n";
@@ -818,6 +825,9 @@ void EffPlast3D::calcPoreVolume() const {
         rxIdx = static_cast<size_t>(cxdX + rad / dX + 0.5 * nX);
         std::vector<double> dispXright(5);
         //std::cout << "dispXright:\n";
+        if (rxIdx > nX - 2) {
+          throw std::out_of_range("Error in calcPoreVolume! Grid is too small or pores are too big!\n");
+        }
         for (int i = 0; i < 5; i++) {
           dispXright[i] = Ux_cpu[czIdx * (nX + 1) * nY + cyIdx * (nX + 1) + rxIdx - 2 + i];
           //std::cout << dispXright[i] << "\n";
@@ -828,6 +838,9 @@ void EffPlast3D::calcPoreVolume() const {
         size_t ryIdx = static_cast<size_t>(cydY - rad / dY + 0.5 * nY);
         std::vector<double> dispYnear(5);
         //std::cout << "dispYnear:\n";
+        if (ryIdx < 1) {
+          throw std::out_of_range("Error in calcPoreVolume! Grid is too small or pores are too big!\n");
+        }
         for (int j = 0; j < 5; j++) {
           dispYnear[j] = Uy_cpu[czIdx * nX * (nY + 1) + (ryIdx - 1 + j) * nX + cxIdx];
           //std::cout << dispYnear[j] << "\n";
@@ -836,6 +849,9 @@ void EffPlast3D::calcPoreVolume() const {
         ryIdx = static_cast<size_t>(cydY + rad / dY + 0.5 * nY);
         std::vector<double> dispYfar(5);
         //std::cout << "dispYfar:\n";
+        if (ryIdx > nY - 2) {
+          throw std::out_of_range("Error in calcPoreVolume! Grid is too small or pores are too big!\n");
+        }
         for (int j = 0; j < 5; j++) {
           dispYfar[j] = Uy_cpu[czIdx * nX * (nY + 1) + (ryIdx - 2 + j) * nX + cxIdx];
           //std::cout << dispYfar[j] << "\n";
@@ -846,6 +862,9 @@ void EffPlast3D::calcPoreVolume() const {
         size_t rzIdx = static_cast<size_t>(czdZ - rad / dZ + 0.5 * nZ);
         std::vector<double> dispZbottom(5);
         //std::cout << "dispZbottom:\n";
+        if (rzIdx < 1) {
+          throw std::out_of_range("Error in calcPoreVolume! Grid is too small or pores are too big!\n");
+        }
         for (int k = 0; k < 5; k++) {
           dispZbottom[k] = Uz_cpu[(rzIdx - 1 + k) * nX * nY + cyIdx * nX + cxIdx];
           //std::cout << dispZbottom[k] << "\n";
@@ -854,6 +873,9 @@ void EffPlast3D::calcPoreVolume() const {
         rzIdx = static_cast<size_t>(czdZ + rad / dZ + 0.5 * nZ);
         std::vector<double> dispZtop(5);
         //std::cout << "dispYtop\n";
+        if (rzIdx > nZ - 2) {
+          throw std::out_of_range("Error in calcPoreVolume! Grid is too small or pores are too big!\n");
+        }
         for (int k = 0; k < 5; k++) {
           dispZtop[k] = Uz_cpu[(rzIdx - 2 + k) * nX * nY + cyIdx * nX + cxIdx];
           //std::cout << dispZtop[k] << "\n";
@@ -877,6 +899,9 @@ void EffPlast3D::calcPoreVolume() const {
 
 /* AVERAGING */
 double EffPlast3D::getPeffNonper() const {
+  if (nX <= 2 && nY <= 2 && nZ <= 2) {
+    throw std::runtime_error("Error in getPeffNonper! The grid is too small!\n");
+  }
   double PeffX{0.0}, PeffY{0.0}, PeffZ{0.0};
   for (int j = 1; j < nY - 1; j++) {
     for (int k = 1; k < nZ - 1; k++) {
@@ -904,6 +929,9 @@ double EffPlast3D::getPeffNonper() const {
 double EffPlast3D::getPeffPer() const {
   if (nPores <= 2) {
     return 0.0;
+  }
+  if (nX < nPores || nY < nPores || nZ < nPores) {
+    throw std::runtime_error("Error in getPeffPer! The grid is too small!\n");
   }
   double PeffX{0.0}, PeffY{0.0}, PeffZ{0.0};
   for (int j = nY / nPores; j < nY * (nPores - 1) / nPores; j++) {
