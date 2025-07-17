@@ -356,10 +356,10 @@ double EffPlast3D::ComputeEffModuli(const double initLoadValue, [[deprecated]] c
   printCalculationType();
 
   ComputeEffParams(0, initLoadValue, loadType_, nTimeSteps_);
-  /*if (NL == 1) {
+  if (NL == 1) {
     calcBulkModuli_PureElast();
   }
-  else {
+  /*else {
     ComputeEffParams(1, initLoadValue * incPercent, sphericalLoadType, 1);
     calcBulkModuli_ElastPlast();
   }
@@ -404,10 +404,10 @@ void EffPlast3D::ComputeEffParams(const size_t step, const double loadStepValue,
 
   PeffNonper[step].resize(nTimeSteps);
   PeffPer[step].resize(nTimeSteps);
-  /*tauInfty[step].resize(nTimeSteps);
+  /*tauInfty[step].resize(nTimeSteps);*/
   dPhi[step].resize(nTimeSteps);
   dPhiPer[step].resize(nTimeSteps);
-  epsilon[step].resize(nTimeSteps);
+  /*epsilon[step].resize(nTimeSteps);
   epsilonPer[step].resize(nTimeSteps);
   sigma[step].resize(nTimeSteps);
   sigmaPer[step].resize(nTimeSteps);*/
@@ -590,10 +590,18 @@ void EffPlast3D::ComputeEffParams(const size_t step, const double loadStepValue,
     SaveSlice(Ux_cpu, Ux_cuda, nX + 1, nY, nZ, nZ / 2, "data/UxcXY_" + std::to_string(8 * NGRID) + "_.dat");
     SaveSlice(Uy_cpu, Uy_cuda, nX, nY + 1, nZ, nZ / 2, "data/UycXY_" + std::to_string(8 * NGRID) + "_.dat");
     SaveSlice(Uz_cpu, Uz_cuda, nX, nY, nZ + 1, nZ / 2, "data/UzcXY_" + std::to_string(8 * NGRID) + "_.dat");
+    calcPoreVolume();
 
     const double Phi0 = 3.1415926 * 4.0 * pow(rad * nPores, 3.0) / (3.0 * lX * lY * lZ);
-    std::cout << "    Phi0 = " << Phi0 << '\n';
+    //std::cout << "    Phi0 = " << Phi0 << '\n';
     log_file << "    Phi0 = " << Phi0 << '\n';
+    const double Phi = 3.1415926 * 4.0 * poreVolume43Pi / (3.0 * lX * lY * lZ);
+    //std::cout << "    Phi = " << Phi << '\n';
+    log_file << "    Phi = " << Phi << '\n';
+
+    dPhi[step][it] = std::abs(Phi - Phi0);
+    std::cout << "    dPhi = " << dPhi[step][it] << '\n';
+    log_file << "    dPhi = " << dPhi[step][it] << '\n';
   } // for(it), action loop
 }
 
@@ -687,6 +695,15 @@ double EffPlast3D::findMaxAbs(const double* const arr, const int size) {
   }
   return max_el;
 }
+double EffPlast3D::findMaxAbs(const std::vector<double>& vec) {
+  double max_el = 0.0;
+  for (auto i : vec) {
+    if (std::abs(i) > std::abs(max_el)) {
+      max_el = i;
+    }
+  }
+  return max_el;
+}
 void EffPlast3D::zeroingPoresDisp() {
   // set zero Ux in the pores
   for (int i = 0; i < nX + 1; i++) {
@@ -760,6 +777,88 @@ void EffPlast3D::zeroingPoresDisp() {
       } // for(k)
     } // for(j)
   }
+}
+void EffPlast3D::calcPoreVolume() const {
+  for (int a = 0; a < nPores; a++) {
+    for (int b = 0; b < nPores; b++) {
+      for (int c = 0; c < nPores; c++) {
+        const double cxdX = 0.5 * (nX - 1) * (1.0 - 1.0 / nPores) - (static_cast<double>(nX - 1) / nPores) * a; // cx / dX
+        const double cydY = 0.5 * (nY - 1) * (1.0 - 1.0 / nPores) - (static_cast<double>(nY - 1) / nPores) * b; // cy / dY
+        const double czdZ = 0.5 * (nZ - 1) * (1.0 - 1.0 / nPores) - (static_cast<double>(nZ - 1) / nPores) * c; // cz / dZ
+
+        const size_t cxIdx = static_cast<size_t>(cxdX + 0.5 * (nX - 1));
+        const size_t cyIdx = static_cast<size_t>(cydY + 0.5 * (nY - 1));
+        const size_t czIdx = static_cast<size_t>(czdZ + 0.5 * (nZ - 1));
+
+        // horizontal displacements
+        // left point of a pore        
+        size_t rxIdx = static_cast<size_t>(cxdX - rad / dX + 0.5 * nX);
+        std::vector<double> dispXleft(5);
+        //std::cout << "dispXleft:\n";
+        for (int i = 0; i < 5; i++) {
+          dispXleft[i] = Ux_cpu[czIdx * (nX + 1) * nY + cyIdx * (nX + 1) + rxIdx - 1 + i];
+          //std::cout << "j = " << cyIdx << " i = " << rxIdx - 1 + i << "\n";
+          //std::cout << dispXleft[i] << "\n";
+        }
+        // right point of a pore
+        rxIdx = static_cast<size_t>(cxdX + rad / dX + 0.5 * nX);
+        std::vector<double> dispXright(5);
+        //std::cout << "dispXright:\n";
+        for (int i = 0; i < 5; i++) {
+          dispXright[i] = Ux_cpu[czIdx * (nX + 1) * nY + cyIdx * (nX + 1) + rxIdx - 2 + i];
+          //std::cout << dispXright[i] << "\n";
+        }
+
+        // depth displacements
+        // near point of a pore
+        size_t ryIdx = static_cast<size_t>(cydY - rad / dY + 0.5 * nY);
+        std::vector<double> dispYnear(5);
+        //std::cout << "dispYnear:\n";
+        for (int j = 0; j < 5; j++) {
+          dispYnear[j] = Uy_cpu[czIdx * nX * (nY + 1) + (ryIdx - 1 + j) * nX + cxIdx];
+          //std::cout << dispYnear[j] << "\n";
+        }
+        // far point of a hole
+        ryIdx = static_cast<size_t>(cydY + rad / dY + 0.5 * nY);
+        std::vector<double> dispYfar(5);
+        //std::cout << "dispYfar:\n";
+        for (int j = 0; j < 5; j++) {
+          dispYfar[j] = Uy_cpu[czIdx * nX * (nY + 1) + (ryIdx - 2 + j) * nX + cxIdx];
+          //std::cout << dispYfar[j] << "\n";
+        }
+
+        // vertical displacements
+        // bottom point of a hole
+        size_t rzIdx = static_cast<size_t>(czdZ - rad / dZ + 0.5 * nZ);
+        std::vector<double> dispZbottom(5);
+        //std::cout << "dispZbottom:\n";
+        for (int k = 0; k < 5; k++) {
+          dispZbottom[k] = Uz_cpu[(rzIdx - 1 + k) * nX * nY + cyIdx * nX + cxIdx];
+          //std::cout << dispZbottom[k] << "\n";
+        }
+        // top point of a hole
+        rzIdx = static_cast<size_t>(czdZ + rad / dZ + 0.5 * nZ);
+        std::vector<double> dispZtop(5);
+        //std::cout << "dispYtop\n";
+        for (int k = 0; k < 5; k++) {
+          dispZtop[k] = Uz_cpu[(rzIdx - 2 + k) * nX * nY + cyIdx * nX + cxIdx];
+          //std::cout << dispZtop[k] << "\n";
+        }
+
+        //std::cout << "dRxLeft = " << FindMaxAbs(dispXleft) << ", dRxRight = " << FindMaxAbs(dispXright) << "\n";
+        const double dRx = -0.5 * (findMaxAbs(dispXleft) - findMaxAbs(dispXright));
+        const double dRy = -0.5 * (findMaxAbs(dispYnear) - findMaxAbs(dispYfar));
+        const double dRz = -0.5 * (findMaxAbs(dispZbottom) - findMaxAbs(dispZtop));
+        //std::cout << "dRx = " << dRx << ", dRy = " << dRy << "\n";
+
+        poreVolume43Pi += (rad + dRx) * (rad + dRy) * (rad + dRz);
+        //std::cout << poreVolume43Pi << "\n";
+        /*if (a > 0 && b > 0 && c > 0 && a < nPores - 1 && b < nPores - 1 && c < nPores - 1) {
+          internalPoreVolumePi += (rad + dRx) * (rad + dRy);
+        }*/
+      } // for(c)
+    } // for(b)
+  } // for(a)
 }
 
 /* AVERAGING */
@@ -893,6 +992,19 @@ void EffPlast3D::printDuration(int elapsed_sec) {
       }
     }
   }
+}
+
+/* FINAL EFFECTIVE MODULI CALCULATION */
+void EffPlast3D::calcBulkModuli_PureElast() {
+  eff_moduli_num_nonper.Kphi = getKphiNonper_PureElast();
+  std::cout << "    ==============\n" << "    Kphi = " << eff_moduli_num_nonper.Kphi << std::endl;
+  log_file << "    ==============\n" << "    Kphi = " << eff_moduli_num_nonper.Kphi << std::endl;
+}
+// bulk moduli in the pure elastic case
+double EffPlast3D::getKphiNonper_PureElast() {
+  const double Pinc = PeffNonper[0][nTimeSteps_ - 1];
+  const double phiInc = dPhi[0][nTimeSteps_ - 1];
+  return Pinc / phiInc;
 }
 
 EffPlast3D::EffPlast3D() {

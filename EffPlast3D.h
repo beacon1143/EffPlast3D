@@ -107,23 +107,24 @@ private:
 	size_t output_step;
 	double lX, lY, lZ;
 	double porosity;
-	std::set<std::pair<int, int>> empty_spaces;
+	//std::set<std::pair<int, int>> empty_spaces;
+	mutable double poreVolume43Pi = 0.0, internalPoreVolume43Pi = 0.0;
 	const double incPercent = 0.005;    // for calculation of effective moduli with plasticity
 
 	// output parameters
 	std::array<std::vector<double>, NL> PeffNonper;
 	std::array<std::vector<double>, NL> PeffPer;
-	std::array<std::vector<double>, NL> tauInfty;
+	//std::array<std::vector<double>, NL> tauInfty;
 	std::array<std::vector<double>, NL> dPhi;
 	std::array<std::vector<double>, NL> dPhiPer;
 	std::array<double, 6> curEffStrain;
-	std::array<std::vector<std::array<double, 3>>, NL> epsilon;
+	/*std::array<std::vector<std::array<double, 3>>, NL> epsilon;
 	std::array<std::vector<std::array<double, 3>>, NL> epsilonPer;
 	std::array<std::vector<std::array<double, 4>>, NL> sigma;    // sigma_zz is non-zero due to plane strain
-	std::array<std::vector<std::array<double, 4>>, NL> sigmaPer;
+	std::array<std::vector<std::array<double, 4>>, NL> sigmaPer;*/
 
 	// effective moduli
-	/*struct EffModuli {
+	struct EffModuli {
 		double Kphi;
 		double Kd;
 		double G;
@@ -138,10 +139,10 @@ private:
 			}
 		}
 	};
-	EffModuli eff_moduli_an,
-		eff_moduli_an_per,
-		eff_moduli_num,
-		eff_moduli_num_per;*/
+	EffModuli /*eff_moduli_an,
+		eff_moduli_an_per,*/
+		eff_moduli_num_nonper,
+		eff_moduli_num_per;
 
 	void ComputeEffParams(const size_t step, const double loadStepValue, const std::array<double, 6>& loadType, const size_t nTimeSteps);
 
@@ -155,8 +156,9 @@ private:
 	static void SaveVector(double* const arr, const int size, const std::string& filename);*/
 
 	static double findMaxAbs(const double* const arr, const int size);
-	//static double FindMaxAbs(const std::vector<double>& vec);
+	static double findMaxAbs(const std::vector<double>& vec);
 	void zeroingPoresDisp();
+	void calcPoreVolume() const;
 
 	// averaging 
 	double getPeffNonper() const;
@@ -177,8 +179,8 @@ private:
 	// final effective moduli calculation
 	void calcBulkModuli_PureElast();
 	void calcBulkModuli_ElastPlast();
-	void calcShearModulus();
-	double getKphi_PureElast();
+	//void calcShearModulus();
+	double getKphiNonper_PureElast();
 	double getKphiPer_PureElast();
 	double getKd_PureElast();
 	double getKdPer_PureElast();
@@ -186,6 +188,6 @@ private:
 	double getKphiPer_ElastPlast();
 	double getKd_ElastPlast();
 	double getKdPer_ElastPlast();
-	double getG();
-	double getGper();
+	/*double getG();
+	double getGper();*/
 };

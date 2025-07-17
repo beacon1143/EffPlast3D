@@ -10,13 +10,13 @@ Lz  = 20.0;                         % physical height
 initLoadValue = -0.00002;
 loadType = [1.0, 1.0, 1.0, 0.0, 0.0, 0.0];
 Y = 0.00001;
-nPores = 3;
+nPores = 1;
 porosity = 0.01;
 rad = (0.75 * porosity * Lx * Ly * Lz / (pi * nPores ^ 3)) ^ (1 / 3);
-nTasks = 2;
+nTasks = 1;
 
 % NUMERICS
-nGrid = 8;
+nGrid = 16;
 nTimeSteps = 1;
 nIter = 1000000;
 eIter = 1.0e-7;
