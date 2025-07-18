@@ -632,10 +632,17 @@ void EffPlast3D::ComputeEffParams(const size_t step, const double loadStepValue,
       eff_moduli_an.Kphi = 4.0 * G0 / Phi0 / 3.0;
     }
     else if (step == 0) {  // elastoplastic case
-      const double KphiAnPlast = 4.0 * G0 / Phi0 / 3.0 / exp(0.75 * std::abs(PeffNonper[step][it]) / Y - 1.0);
-      std::cout << "    KphiAnPlast = " << KphiAnPlast << '\n';
-      log_file << "    KphiAnPlast = " << KphiAnPlast << '\n';
+      const double KphiAnPlastNonper = 4.0 * G0 / Phi0 / 3.0 / exp(0.75 * std::abs(PeffNonper[step][it]) / Y - 1.0);
+      std::cout << "    KphiAnPlastNonper = " << KphiAnPlastNonper << '\n';
+      log_file << "    KphiAnPlastNonper = " << KphiAnPlastNonper << '\n';
       eff_moduli_an.Kphi = 4.0 * G0 / Phi0 / 3.0 / exp(0.75 * std::abs(PeffNonper[step][it]) / Y - 1.0);
+
+      if (nPores > 2) {
+        const double KphiAnPlastPer = 4.0 * G0 / Phi0 / 3.0 / exp(0.75 * std::abs(PeffPer[step][it]) / Y - 1.0);
+        std::cout << "    KphiAnPlastPer = " << KphiAnPlastPer << '\n';
+        log_file << "    KphiAnPlastPer = " << KphiAnPlastPer << '\n';
+        eff_moduli_an.Kphi = 4.0 * G0 / Phi0 / 3.0 / exp(0.75 * std::abs(PeffPer[step][it]) / Y - 1.0);
+      }
     }
   } // for(it), action loop
 }
@@ -1073,9 +1080,11 @@ void EffPlast3D::calcBulkModuli_ElastPlast() {
   std::cout << "    ==============\n\n" << "KphiNonper = " << eff_moduli_num_nonper.Kphi << std::endl;
   log_file << "    ==============\n\n" << "KphiNonper = " << eff_moduli_num_nonper.Kphi << std::endl;
 
-  eff_moduli_num_per.Kphi = getKphiPer_ElastPlast();
-  std::cout << "KphiPer = " << eff_moduli_num_per.Kphi << std::endl;
-  log_file << "KphiPer = " << eff_moduli_num_per.Kphi << std::endl;
+  if (nPores > 2) {
+    eff_moduli_num_per.Kphi = getKphiPer_ElastPlast();
+    std::cout << "KphiPer = " << eff_moduli_num_per.Kphi << std::endl;
+    log_file << "KphiPer = " << eff_moduli_num_per.Kphi << std::endl;
+  }
 }
 // bulk moduli in the pure elastic case
 double EffPlast3D::getKphiNonper_PureElast() {
