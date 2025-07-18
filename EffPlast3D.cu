@@ -373,12 +373,14 @@ double EffPlast3D::ComputeEffModuli(const double initLoadValue, [[deprecated]] c
     calcBulkModuli_ElastPlast();
   }
 
-  /*if (NL == 3) {
-    ComputeEffParams(2, initLoadValue * incPercent, deviatoricLoadType, 1);
-    calcShearModulus();
+  if (NL >= 3) {
+    std::cout << "WARNING:  Effective shear modulus estimation is under development!\n";
+    log_file << "WARNING:  Effective shear modulus estimation is under development!\n";
+    //ComputeEffParams(2, initLoadValue * incPercent, deviatoricLoadType, 1);
+    //calcShearModulus();
   }
 
-  printEffectiveModuli();
+  /*printEffectiveModuli();
   printWarnings();
   */
 
