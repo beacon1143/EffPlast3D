@@ -988,6 +988,9 @@ void EffPlast3D::printStepInfo(const size_t step) {
   log_file << "Grid resolution is " << nX << "x" << nY << "x" << nZ << "\n\n";
 }
 void EffPlast3D::printCalculationType() {
+  auto now = std::chrono::system_clock::now();
+  auto now_time = std::chrono::system_clock::to_time_t(now);
+  log_file << "\nDate and time of calculation start: " << std::ctime(&now_time);
   switch (NL) {
   case 1:
     std::cout << "\nPURE ELASTIC CALCULATION\nESTIMATION OF THE EFFECTIVE BULK MODULI\n";
