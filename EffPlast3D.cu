@@ -1180,29 +1180,42 @@ EffPlast3D::~EffPlast3D() {
 
   // stress
   delete[] P0_cpu;
-  delete[] P_cpu;
-  delete[] tauXX_cpu;
-  delete[] tauYY_cpu;
-  delete[] tauZZ_cpu;
-  delete[] tauXY_cpu;
-  delete[] tauXZ_cpu;
-  delete[] tauYZ_cpu;
-  //delete[] tauXYav_cpu;
   gpuErrchk(cudaFree(P0_cuda));
+  delete[] P_cpu;
   gpuErrchk(cudaFree(P_cuda));
-  gpuErrchk(cudaFree(tauXX_cuda));
-  gpuErrchk(cudaFree(tauYY_cuda));
-  gpuErrchk(cudaFree(tauZZ_cuda));
-  gpuErrchk(cudaFree(tauXY_cuda));
-  gpuErrchk(cudaFree(tauXZ_cuda));
-  gpuErrchk(cudaFree(tauYZ_cuda));
-  //gpuErrchk(cudaFree(tauXYav_cuda));
 
-  // plasticity
-  /*delete[] J2_cpu;
-  delete[] J2XY_cpu;
-  gpuErrchk(cudaFree(J2_cuda));
-  gpuErrchk(cudaFree(J2XY_cuda));*/
+  delete[] tauXX_cpu;
+  gpuErrchk(cudaFree(tauXX_cuda));
+  delete[] tauYY_cpu;
+  gpuErrchk(cudaFree(tauYY_cuda));
+  delete[] tauZZ_cpu;
+  gpuErrchk(cudaFree(tauZZ_cuda));
+
+  delete[] tauXY_cpu;
+  gpuErrchk(cudaFree(tauXY_cuda));
+  delete[] tauXZ_cpu;
+  gpuErrchk(cudaFree(tauXZ_cuda));
+  delete[] tauYZ_cpu;
+  gpuErrchk(cudaFree(tauYZ_cuda));
+
+  if (NL > 1) {
+    delete[] tauXYav_cpu;
+    gpuErrchk(cudaFree(tauXYav_cuda));
+    delete[] tauXZav_cpu;
+    gpuErrchk(cudaFree(tauXZav_cuda));
+    delete[] tauYZav_cpu;
+    gpuErrchk(cudaFree(tauYZav_cuda));
+
+    // plasticity
+    delete[] J2_cpu;
+    gpuErrchk(cudaFree(J2_cuda));
+    delete[] J2XY_cpu;
+    gpuErrchk(cudaFree(J2XY_cuda));
+    delete[] J2XZ_cpu;
+    gpuErrchk(cudaFree(J2XZ_cuda));
+    delete[] J2YZ_cpu;
+    gpuErrchk(cudaFree(J2YZ_cuda));
+  }
 
   // displacement
   delete[] Ux_cpu;
