@@ -624,6 +624,13 @@ void EffPlast3D::ComputeEffParams(const size_t step, const double loadStepValue,
     dPhiPer[step][it] = std::abs(PhiPer - Phi0);
     std::cout << "    dPhiPer = " << dPhiPer[step][it] << '\n';
     log_file << "    dPhiPer = " << dPhiPer[step][it] << '\n';
+
+    if (NL <= 1) {  // pure elastic case
+      const double KphiExactElast = 1.5 * G0 / Phi0;
+      std::cout << "    KphiExactElast = " << KphiExactElast << '\n';
+      log_file << "    KphiExactElast = " << KphiExactElast << '\n';
+      eff_moduli_an.Kphi = 1.5 * G0 / Phi0;
+    }
   } // for(it), action loop
 }
 

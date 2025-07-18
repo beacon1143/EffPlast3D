@@ -140,8 +140,8 @@ private:
 			}
 		}
 	};
-	EffModuli /*eff_moduli_an,
-		eff_moduli_an_per,*/
+	EffModuli eff_moduli_an,
+		/*eff_moduli_an_per,*/
 		eff_moduli_num_nonper,
 		eff_moduli_num_per;
 
