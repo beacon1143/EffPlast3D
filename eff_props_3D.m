@@ -8,19 +8,19 @@ Lx  = 20.0;                         % physical length
 Ly  = 20.0;                         % physical width
 Lz  = 20.0;                         % physical height
 initLoadValue = -0.00002;
-loadType = [1.0, 1.0, 1.0, 0.0, 0.0, 0.0];
+loadType = [1.0, 1.0, 1.0, 0.0, 0.0, 0.0]; % Exx, Eyy, Ezz, Exy, Exz, Eyz
 Y = 0.00001;
-nPores = 3;
+nPores = 3;    % total pores number: nPores x nPores x nPores
 porosity = 0.01;
 rad = (0.75 * porosity * Lx * Ly * Lz / (pi * nPores ^ 3)) ^ (1 / 3);
-nTasks = 2;
+nTasks = 2;    % 1 for pure elastic calc, 2 for elastoplastic one
 
 % NUMERICS
 nGrid = 16;
 nTimeSteps = 1;
 nIter = 1000000;
 eIter = 1.0e-7;
-iDevice = 0;
+iDevice = 0;    % index of CUDA device
 
 needCPUcalculation = false;
 
