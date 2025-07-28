@@ -386,16 +386,20 @@ double EffPlast3D::ComputeEffModuli(const double initLoadValue, [[deprecated]] c
 
   /* OUTPUT DATA WRITING */
   SaveSlice(P_cpu, P_cuda, nX, nY, nZ, nZ / 2, "data/PcXY_" + std::to_string(8 * NGRID) + "_.dat");
-  SaveSlice(tauXX_cpu, tauXX_cuda, nX, nY, nZ, nZ / 2, "data/tauXXc_" + std::to_string(8 * NGRID) + "_.dat");
-  SaveSlice(tauXZ_cpu, tauXZ_cuda, nX - 1, nY, nZ - 1, nZ / 2, "data/tauXZcXY_" + std::to_string(8 * NGRID) + "_.dat");
+  if (NGRID < 32) {
+    SaveSlice(tauXX_cpu, tauXX_cuda, nX, nY, nZ, nZ / 2, "data/tauXXc_" + std::to_string(8 * NGRID) + "_.dat");
+    SaveSlice(tauXZ_cpu, tauXZ_cuda, nX - 1, nY, nZ - 1, nZ / 2, "data/tauXZcXY_" + std::to_string(8 * NGRID) + "_.dat");
+    SaveSlice(Ux_cpu, Ux_cuda, nX + 1, nY, nZ, nZ / 2, "data/UxcXY_" + std::to_string(8 * NGRID) + "_.dat");
+    SaveSlice(Vx_cpu, Vx_cuda, nX + 1, nY, nZ, nZ / 2, "data/VxcXY_" + std::to_string(8 * NGRID) + "_.dat");
+  }
   if (NL > 1) {
     SaveSlice(J2_cpu, J2_cuda, nX, nY, nZ, nZ / 2, "data/J2cXY_" + std::to_string(8 * NGRID) + "_.dat");
-    SaveSlice(J2XY_cpu, J2XY_cuda, nX - 1, nY - 1, nZ, nZ / 2, "data/J2XYcXY_" + std::to_string(8 * NGRID) + "_.dat");
-    SaveSlice(J2XZ_cpu, J2XZ_cuda, nX - 1, nY, nZ - 1, nZ / 2, "data/J2XZcXY_" + std::to_string(8 * NGRID) + "_.dat");
-    SaveSlice(J2YZ_cpu, J2YZ_cuda, nX, nY - 1, nZ - 1, nZ / 2, "data/J2YZcXY_" + std::to_string(8 * NGRID) + "_.dat");
+    if (NGRID < 32) {
+      SaveSlice(J2XY_cpu, J2XY_cuda, nX - 1, nY - 1, nZ, nZ / 2, "data/J2XYcXY_" + std::to_string(8 * NGRID) + "_.dat");
+      SaveSlice(J2XZ_cpu, J2XZ_cuda, nX - 1, nY, nZ - 1, nZ / 2, "data/J2XZcXY_" + std::to_string(8 * NGRID) + "_.dat");
+      SaveSlice(J2YZ_cpu, J2YZ_cuda, nX, nY - 1, nZ - 1, nZ / 2, "data/J2YZcXY_" + std::to_string(8 * NGRID) + "_.dat");
+    }
   }
-  SaveSlice(Ux_cpu, Ux_cuda, nX + 1, nY, nZ, nZ / 2, "data/UxcXY_" + std::to_string(8 * NGRID) + "_.dat");
-  SaveSlice(Vx_cpu, Vx_cuda, nX + 1, nY, nZ, nZ / 2, "data/VxcXY_" + std::to_string(8 * NGRID) + "_.dat");
   //SaveMatrix(tauYY_cpu, tauYY_cuda, nX, nY, "data/tauYYc_" + std::to_string(32 * NGRID) + "_.dat");
   //SaveMatrix(tauXYav_cpu, tauXYav_cuda, nX, nY, "data/tauXYavc_" + std::to_string(32 * NGRID) + "_.dat");
   //SaveMatrix(J2_cpu, J2_cuda, nX, nY, "data/J2c_" + std::to_string(32 * NGRID) + "_.dat");
