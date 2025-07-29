@@ -1143,7 +1143,7 @@ EffPlast3D::EffPlast3D() {
   nu0 = (1.5 * K0 - G0) / (3.0 * K0 + G0);
   //std::cout << "E = " << E0 << ", nu = " << nu0 << "\n";
   rad = pa_cpu[11];
-  Y = pa_cpu[10] / sqrt(3.0);
+  Y = pa_cpu[10] / sqrt(2.0);
   nPores = pa_cpu[12];
 
   cudaMemcpyToSymbol(coh_cuda, &pa_cpu[10], sizeof(double));
